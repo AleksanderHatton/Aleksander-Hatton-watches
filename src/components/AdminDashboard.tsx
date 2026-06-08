@@ -27,7 +27,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     payoutBankConnected: true,
     payoutAccountType: 'Business Swift/IBAN Transfer',
     merchantStatus: 'Active & Verified',
-    payoutRecipientEmail: 'leohatton28@gmail.com'
+    payoutRecipientEmail: 'inquiries@ahwatches.com'
   });
 
   const [activeTab, setActiveTab] = useState<'stock' | 'valuations' | 'sourcing' | 'orders' | 'messages' | 'emails'>('stock');
@@ -286,7 +286,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </span>
           </div>
           <p className="text-zinc-700 text-xs mt-1 font-mono">
-            Merchant Operator: <span className="text-zinc-700">leohatton28@gmail.com</span> | Registered Base: Sheffield, UK
+            Merchant Operator: <span className="text-zinc-700">inquiries@ahwatches.com</span> | Registered Base: Sheffield, UK
           </p>
         </div>
 
