@@ -40,7 +40,7 @@ export default function Footer({ setView, openPolicies }: FooterProps) {
             </p>
             <div className="flex items-center space-x-4">
               <a 
-                href="https://instagram.com" 
+                href="https://www.instagram.com/aleksander.h.watches/" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="w-8 h-8 rounded-full border border-zinc-300 hover:border-[#C5A880] hover:text-[#C5A880] flex items-center justify-center transition-colors text-zinc-500 bg-white"
@@ -48,7 +48,7 @@ export default function Footer({ setView, openPolicies }: FooterProps) {
                 <Instagram className="w-4 h-4" />
               </a>
               <a 
-                href="https://linkedin.com" 
+                href="https://www.linkedin.com/company/aleksander-hatton/?viewAsMember=true" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="w-8 h-8 rounded-full border border-zinc-300 hover:border-[#C5A880] hover:text-[#C5A880] flex items-center justify-center transition-colors text-zinc-500 bg-white"
@@ -144,11 +144,11 @@ export default function Footer({ setView, openPolicies }: FooterProps) {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-[#C5A880] shrink-0" />
-                <a href="tel:+441142555777" className="hover:text-zinc-950 transition-colors font-semibold">+44 (0) 114 2555 777</a>
+                <span className="font-semibold text-zinc-700">Phone line temporarily unavailable — landline being updated</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#C5A880] shrink-0" />
-                <a href="mailto:leohatton28@gmail.com" className="hover:text-zinc-950 transition-colors font-semibold">leohatton28@gmail.com</a>
+                <a href="mailto:inquiries@ahwatches.com" className="hover:text-zinc-950 transition-colors font-semibold">inquiries@ahwatches.com</a>
               </div>
               <div className="pt-3 border-t border-zinc-200 text-[10px] text-zinc-500 leading-relaxed font-mono">
                 BY APPOINTMENT ONLY<br />
