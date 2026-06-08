@@ -249,7 +249,7 @@ export const handler = async (event: any) => {
         payoutBankConnected: true,
         payoutAccountType: 'Stripe payouts to connected business bank',
         merchantStatus: 'Active after Stripe setup',
-        payoutRecipientEmail: process.env.ADMIN_EMAIL || '',
+        payoutRecipientEmail: process.env.ADMIN_EMAIL || 'inquiries@ahwatches.com',
       });
     }
 
