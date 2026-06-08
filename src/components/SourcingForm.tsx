@@ -113,7 +113,7 @@ export default function SourcingForm() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="e.g. leohatton28@gmail.com" 
+                      placeholder="e.g. yourname@example.com" 
                       className="w-full bg-zinc-50 border border-zinc-250 rounded-sm px-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#C5A880] focus:bg-white transition-all font-semibold"
                     />
                   </div>
@@ -336,7 +336,7 @@ export default function SourcingForm() {
               <span>Dealer alerts dispatched successfully</span>
             </div>
             <p className="text-[10px] text-zinc-500 font-mono leading-relaxed mt-1 uppercase font-semibold">
-              • Direct email with client specifications transmitted securely to: <strong>leohatton28@gmail.com</strong>.<br />
+              • Direct email with client specifications transmitted securely to: <strong>inquiries@ahwatches.com</strong>.<br />
               • Auto-conf email sent to client details.
             </p>
           </div>
