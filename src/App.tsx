@@ -841,6 +841,7 @@ export default function App() {
           {/* VIEW: ADMIN CONSOLE */}
           {currentView === 'admin' && session?.role === 'dealer' && !selectedWatch && (
             <motion.div
+              className="dealer-console-shell"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
