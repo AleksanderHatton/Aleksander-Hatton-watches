@@ -274,19 +274,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [errorStock, setErrorStock] = useState('');
 
   return (
-    <div className="dealer-console max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="dealer-console min-h-screen bg-white text-zinc-900 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Admin Header Context banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0F0F0F] border border-[#222222] p-6 rounded-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-zinc-200 p-6 rounded-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-serif text-2xl tracking-widest text-[#C5A880] uppercase">DEALER CONSOLE</h1>
-            <span className="bg-emerald-950 text-emerald-400 text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded border border-emerald-800 tracking-wider">
+            <span className="bg-emerald-50 text-emerald-700 text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded border border-emerald-200 tracking-wider">
               Secure Channel
             </span>
           </div>
-          <p className="text-zinc-500 text-xs mt-1 font-mono">
-            Merchant Operator: <span className="text-zinc-300">leohatton28@gmail.com</span> | Registered Base: Sheffield, UK
+          <p className="text-zinc-700 text-xs mt-1 font-mono">
+            Merchant Operator: <span className="text-zinc-700">leohatton28@gmail.com</span> | Registered Base: Sheffield, UK
           </p>
         </div>
 
@@ -294,14 +294,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <button
             onClick={fetchData}
             title="Reload database logs"
-            className="p-2.5 rounded border border-[#2A2A2A] hover:bg-neutral-900 transition-colors text-zinc-400 hover:text-white"
+            className="p-2.5 rounded border border-zinc-200 hover:bg-zinc-100 transition-colors text-zinc-700 hover:text-zinc-950"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           
           <button
             onClick={onLogout}
-            className="bg-red-950/40 hover:bg-red-900/60 border border-red-900 text-red-200 text-xs font-semibold uppercase tracking-widest px-5 py-2.5 rounded-sm transition-colors duration-200 flex items-center gap-2"
+            className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-semibold uppercase tracking-widest px-5 py-2.5 rounded-sm transition-colors duration-200 flex items-center gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out
@@ -311,7 +311,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       {message.text && (
         <div className={`p-4 border rounded-sm text-xs font-mono uppercase ${
-          message.type === 'success' ? 'bg-emerald-950/40 border-emerald-900 text-emerald-200' : 'bg-red-950/40 border-red-900 text-red-200'
+          message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
         }`}>
           {message.text}
         </div>
@@ -320,51 +320,51 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       {/* Grid: Financial & Merchant Payout Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="bg-[#0F0F0F] border border-[#1F1F1F] p-5 rounded-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white border border-zinc-200 p-5 rounded-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Gross Sales Volume</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Gross Sales Volume</span>
             <Banknote className="w-5 h-5 text-[#C5A880]" />
           </div>
           <div>
-            <h3 className="font-serif text-2xl text-white font-medium">£{overview.totalSales?.toLocaleString() || '0'}</h3>
-            <p className="text-[10px] text-zinc-500 font-mono uppercase mt-1">Stripe Checkout Authorized</p>
+            <h3 className="font-serif text-2xl text-zinc-950 font-medium">£{overview.totalSales?.toLocaleString() || '0'}</h3>
+            <p className="text-[10px] text-zinc-700 font-mono uppercase mt-1">Stripe Checkout Authorized</p>
           </div>
         </div>
 
-        <div className="bg-[#0F0F0F] border border-[#1F1F1F] p-5 rounded-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white border border-zinc-200 p-5 rounded-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Valuation Appraisals</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Valuation Appraisals</span>
             <FileText className="w-5 h-5 text-[#C5A880]" />
           </div>
           <div>
-            <h3 className="font-serif text-2xl text-white font-medium">{overview.totalValuationsCount || '0'}</h3>
+            <h3 className="font-serif text-2xl text-zinc-950 font-medium">{overview.totalValuationsCount || '0'}</h3>
             <p className="text-[10px] text-[#C5A880] font-mono uppercase mt-1">Pending physical audit</p>
           </div>
         </div>
 
-        <div className="bg-[#0F0F0F] border border-[#1F1F1F] p-5 rounded-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white border border-zinc-200 p-5 rounded-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Active sourcing requests</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Active sourcing requests</span>
             <Compass className="w-5 h-5 text-[#C5A880]" />
           </div>
           <div>
-            <h3 className="font-serif text-2xl text-white font-medium">{overview.activeSourcingCount || '0'}</h3>
-            <p className="text-[10px] text-zinc-500 font-mono uppercase mt-1">Dealer lines deployed</p>
+            <h3 className="font-serif text-2xl text-zinc-950 font-medium">{overview.activeSourcingCount || '0'}</h3>
+            <p className="text-[10px] text-zinc-700 font-mono uppercase mt-1">Dealer lines deployed</p>
           </div>
         </div>
 
         {/* SECURE PAYOUTS TO BANK ACCOUNT DETAILS (Satisfying section 7: "payment payouts to my bank account") */}
-        <div className="bg-[#0F0F0F] border border-[#1F1F1F] p-5 rounded-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white border border-zinc-200 p-5 rounded-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Protected Payout lines</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Protected Payout lines</span>
             <Globe className="w-5 h-5 text-emerald-500" />
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase font-bold text-emerald-400">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase font-bold text-emerald-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>Sheffield Bank Payout Direct</span>
             </div>
-            <p className="text-[10.5px] text-zinc-400 leading-normal font-sans">
+            <p className="text-[10.5px] text-zinc-700 leading-normal font-sans">
               Linked Account: <span className="font-mono text-[9px] text-[#C5A880]">UK HSBC BUSINESS ACCT ending 7824</span>. Daily payouts configured under strict security protocol.
             </p>
           </div>
@@ -373,7 +373,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       </div>
 
       {/* Main Admin Tab switcher */}
-      <div className="flex flex-wrap border-b border-[#1F1F1F] gap-2">
+      <div className="flex flex-wrap border-b border-zinc-200 gap-2">
         {[
           { id: 'stock', label: 'Inventory Management', icon: Plus },
           { id: 'valuations', label: 'Valuation Submissions', count: valuations.length, icon: FileText },
@@ -390,14 +390,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-5 py-3 text-xs tracking-wider uppercase font-medium transition-colors ${
                 isSelected 
-                  ? 'border-b-2 border-[#C5A880] text-[#C5A880] bg-[#111]' 
-                  : 'text-zinc-400 hover:text-white hover:bg-neutral-900'
+                  ? 'border-b-2 border-[#C5A880] text-[#C5A880] bg-[#FAF6F0]' 
+                  : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               {tab.count !== undefined && (
-                <span className="bg-[#2A2A2A] text-zinc-300 px-1.5 py-0.5 text-[9px] font-mono rounded font-bold">
+                <span className="bg-zinc-200 text-zinc-700 px-1.5 py-0.5 text-[9px] font-mono rounded font-bold">
                   {tab.count}
                 </span>
               )}
@@ -414,16 +414,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Left: Interactive Input Form (Add or Edit) */}
-            <div className="bg-[#0F0F0F] border border-[#1A1A1A] p-6 space-y-6 lg:sticky lg:top-24 max-h-[85vh] overflow-y-auto">
+            <div className="bg-white border border-zinc-200 p-6 space-y-6 lg:sticky lg:top-24 max-h-[85vh] overflow-y-auto">
               <div>
-                <h3 className="font-serif text-lg text-white uppercase tracking-wide">
+                <h3 className="font-serif text-lg text-zinc-950 uppercase tracking-wide">
                   {isEditing ? 'EDIT WATCH DETAILS' : 'ADD TIMEPIECE TO CATALOG'}
                 </h3>
-                <p className="text-[10px] text-zinc-500 font-mono uppercase mt-1">Manual Inventory Management Control Panel</p>
+                <p className="text-[10px] text-zinc-700 font-mono uppercase mt-1">Manual Inventory Management Control Panel</p>
               </div>
 
               {errorStock && (
-                <div className="p-3 bg-red-950/40 border border-red-900 text-red-200 text-xs rounded-sm">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
                   {errorStock}
                 </div>
               )}
@@ -431,7 +431,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <form onSubmit={handleStockSubmit} className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Brand *</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Brand *</label>
                     <input 
                       type="text" 
                       name="brand" 
@@ -439,11 +439,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       value={stockForm.brand}
                       onChange={handleStockInputChange}
                       placeholder="e.g. Rolex" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Model Name *</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Model Name *</label>
                     <input 
                       type="text" 
                       name="model" 
@@ -451,39 +451,39 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       value={stockForm.model}
                       onChange={handleStockInputChange}
                       placeholder="e.g. Submariner Kermit" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Case reference *</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Case reference *</label>
                     <input 
                       type="text" 
                       name="reference" 
                       value={stockForm.reference}
                       onChange={handleStockInputChange}
                       placeholder="e.g. 126610LV" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Year code</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Year code</label>
                     <input 
                       type="text" 
                       name="year" 
                       value={stockForm.year}
                       onChange={handleStockInputChange}
                       placeholder="e.g. 2023" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="col-span-2">
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Price (£ GBP) *</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Price (£ GBP) *</label>
                     <input 
                       type="number" 
                       name="price" 
@@ -491,16 +491,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       value={stockForm.price}
                       onChange={handleStockInputChange}
                       placeholder="e.g. 12850" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3.5 py-2 text-white font-mono focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3.5 py-2 text-zinc-950 font-mono focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Status</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Status</label>
                     <select 
                       name="status"
                       value={stockForm.status}
                       onChange={handleStockInputChange}
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-2 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-2 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     >
                       <option value="Available">Available</option>
                       <option value="Reserved">Reserved</option>
@@ -511,12 +511,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Cond</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Cond</label>
                     <select 
                       name="condition"
                       value={stockForm.condition}
                       onChange={handleStockInputChange}
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-1.5 py-2 text-white focus:outline-none focus:border-[#C5A880] text-[10px]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-1.5 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white text-[10px]"
                     >
                       <option value="Unworn">Unworn</option>
                       <option value="Mint">Mint</option>
@@ -525,12 +525,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Box</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Box</label>
                     <select 
                       name="box"
                       value={stockForm.box}
                       onChange={handleStockInputChange}
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-1.5 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-1.5 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     >
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
@@ -538,12 +538,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Papers</label>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Papers</label>
                     <select 
                       name="papers"
                       value={stockForm.papers}
                       onChange={handleStockInputChange}
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-1.5 py-2 text-white focus:outline-none focus:border-[#C5A880]"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-1.5 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                     >
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
@@ -553,7 +553,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Watch photo / Cover image *</label>
+                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Watch photo / Cover image *</label>
                   
                   {/* Photo Drag and Drop area from physical Computer Drive */}
                   <div 
@@ -565,7 +565,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     className={`border border-dashed rounded-sm p-4 text-center cursor-pointer transition-all ${
                       dragActive 
                         ? 'border-[#C5A880] bg-[#C5A880]/5' 
-                        : 'border-[#2A2A2A] hover:border-zinc-500 bg-[#151515]'
+                        : 'border-zinc-200 hover:border-zinc-500 bg-white'
                     }`}
                   >
                     <input 
@@ -578,7 +578,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     
                     {stockForm.image ? (
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded overflow-hidden border border-[#2A2A2A] bg-black shrink-0">
+                        <div className="w-14 h-14 rounded overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0">
                           <img 
                             src={stockForm.image} 
                             alt="Preview" 
@@ -587,11 +587,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           />
                         </div>
                         <div className="text-left space-y-1 overflow-hidden">
-                          <p className="text-[10px] font-mono text-emerald-400 font-bold uppercase flex items-center gap-1">
+                          <p className="text-[10px] font-mono text-emerald-700 font-bold uppercase flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                             Photo Loaded Successfully
                           </p>
-                          <p className="text-[9px] text-zinc-500 truncate max-w-[150px]">
+                          <p className="text-[9px] text-zinc-700 truncate max-w-[150px]">
                             {stockForm.image.startsWith('data:') ? 'Local file uploaded' : stockForm.image}
                           </p>
                           <button 
@@ -600,7 +600,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               e.stopPropagation();
                               setStockForm(prev => ({ ...prev, image: '' }));
                             }}
-                            className="text-[9px] font-bold font-sans uppercase tracking-wider text-red-550 hover:text-red-400 transition-colors"
+                            className="text-[9px] font-bold font-sans uppercase tracking-wider text-red-550 hover:text-red-700 transition-colors"
                           >
                             Clear Photo
                           </button>
@@ -608,13 +608,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </div>
                     ) : (
                       <div className="space-y-1.5 py-1">
-                        <div className="flex justify-center text-zinc-500">
+                        <div className="flex justify-center text-zinc-700">
                           <Upload className="w-5 h-5" />
                         </div>
-                        <p className="text-[10px] font-mono text-zinc-400 uppercase font-semibold">
+                        <p className="text-[10px] font-mono text-zinc-700 uppercase font-semibold">
                           Drag &amp; drop timepiece photo
                         </p>
-                        <p className="text-[9px] text-zinc-600">
+                        <p className="text-[9px] text-zinc-700">
                           or click to browse computer files (Max 8MB)
                         </p>
                       </div>
@@ -623,27 +623,27 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                   {/* Fallback Manual Text Input */}
                   <div className="mt-3">
-                    <label className="block text-[9px] font-mono uppercase text-zinc-500 mb-1">Or provide alternative Image URL</label>
+                    <label className="block text-[9px] font-mono uppercase text-zinc-700 mb-1">Or provide alternative Image URL</label>
                     <input 
                       type="text" 
                       name="image" 
                       value={stockForm.image}
                       onChange={handleStockInputChange}
                       placeholder="https://example.com/watch-photo.jpg" 
-                      className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white text-[11px] focus:outline-none focus:border-[#C5A880] font-mono"
+                      className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 text-[11px] focus:outline-none focus:border-[#C5A880] focus:bg-white font-mono"
                     />
                     <div className="flex gap-2.5 mt-2 justify-end">
                       <button 
                         type="button" 
                         onClick={() => setStockForm({ ...stockForm, image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=800' })}
-                        className="text-[9px] font-mono uppercase bg-[#1A1A1A] text-[#C5A880] hover:bg-[#252525] px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
+                        className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
                       >
                         Rolex Preset
                       </button>
                       <button 
                         type="button" 
                         onClick={() => setStockForm({ ...stockForm, image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800' })}
-                        className="text-[9px] font-mono uppercase bg-[#1A1A1A] text-[#C5A880] hover:bg-[#252525] px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
+                        className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
                       >
                         Patek Preset
                       </button>
@@ -652,28 +652,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Detailed Description</label>
+                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Detailed Description</label>
                   <textarea 
                     name="description" 
                     rows={4}
                     value={stockForm.description}
                     onChange={handleStockInputChange}
                     placeholder="Describe historical context, included box sets, service tags, etc." 
-                    className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2.5 text-white focus:outline-none focus:border-[#C5A880] resize-none"
+                    className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2.5 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white resize-none"
                   ></textarea>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">Legacy Stripe Link (not required)</label>
+                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Legacy Stripe Link (not required)</label>
                   <input 
                     type="url" 
                     name="stripeLink" 
                     value={stockForm.stripeLink}
                     onChange={handleStockInputChange}
                     placeholder="Leave blank unless migrating an old Stripe link" 
-                    className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#C5A880] font-mono"
+                    className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white font-mono"
                   />
-                  <p className="text-[9px] text-zinc-500 mt-1 leading-normal font-sans">
+                  <p className="text-[9px] text-zinc-700 mt-1 leading-normal font-sans">
                     You can leave this blank. The live site now creates Stripe Checkout sessions automatically from the saved database price.
                   </p>
                 </div>
@@ -683,7 +683,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <button
                       type="button"
                       onClick={resetStockForm}
-                      className="px-4 py-2 border border-[#2A2A2A] rounded bg-transparent hover:bg-neutral-900 text-zinc-400 tracking-wider text-[10px] uppercase font-bold"
+                      className="px-4 py-2 border border-zinc-200 rounded bg-transparent hover:bg-zinc-100 text-zinc-700 tracking-wider text-[10px] uppercase font-bold"
                     >
                       Cancel
                     </button>
@@ -700,16 +700,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             {/* Right: Listed Inventory list (Edit or Delete) */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-[#222]">
-                <h4 className="font-serif text-sm text-white uppercase tracking-wider font-bold">Active Showroom Stock</h4>
-                <span className="text-[10px] font-mono text-zinc-500 uppercase">{stock.length} listed pieces</span>
+              <div className="flex justify-between items-center pb-2 border-b border-zinc-200">
+                <h4 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">Active Showroom Stock</h4>
+                <span className="text-[10px] font-mono text-zinc-700 uppercase">{stock.length} listed pieces</span>
               </div>
 
               <div className="space-y-3 max-h-[85vh] overflow-y-auto pr-1">
                 {stock.map((watch) => (
-                  <div key={watch.id} className="p-4 bg-[#0F0F0F] rounded-sm border border-[#1F1F1F] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div key={watch.id} className="p-4 bg-white rounded-sm border border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 bg-zinc-900 rounded border border-[#222222] overflow-hidden shrink-0">
+                      <div className="w-14 h-14 bg-zinc-50 rounded border border-zinc-200 overflow-hidden shrink-0">
                         <img 
                           src={watch.image} 
                           alt={watch.model} 
@@ -719,17 +719,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono uppercase tracking-wide text-zinc-500">{watch.brand}</span>
+                          <span className="text-[10px] font-mono uppercase tracking-wide text-zinc-700">{watch.brand}</span>
                           <span className={`text-[8.5px] font-mono uppercase font-bold px-1.5 rounded-sm ${
-                            watch.status === 'Available' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
-                            watch.status === 'Reserved' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
-                            'bg-zinc-900 text-zinc-400 border border-[#222]'
+                            watch.status === 'Available' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            watch.status === 'Reserved' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                            'bg-zinc-50 text-zinc-700 border border-zinc-200'
                           }`}>
                             {watch.status}
                           </span>
                         </div>
-                        <h4 className="font-serif text-xs text-white uppercase tracking-wide mt-0.5">{watch.model}</h4>
-                        <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                        <h4 className="font-serif text-xs text-zinc-950 uppercase tracking-wide mt-0.5">{watch.model}</h4>
+                        <p className="text-[10px] text-zinc-700 font-mono mt-0.5">
                           Ref: {watch.reference} | Year: {watch.year} | £{watch.price.toLocaleString()}
                         </p>
                       </div>
@@ -738,14 +738,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                       <button
                         onClick={() => startEdit(watch)}
-                        className="p-1.5 bg-zinc-900 hover:bg-[#1C1A14] border border-[#2A2A2A] rounded-sm hover:border-[#C5A880] text-zinc-400 hover:text-[#C5A880] transition-colors"
+                        className="p-1.5 bg-zinc-50 hover:bg-[#FAF6F0] border border-zinc-200 rounded-sm hover:border-[#C5A880] text-zinc-700 hover:text-[#C5A880] transition-colors"
                         title="Edit watch features"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(watch.id)}
-                        className="p-1.5 bg-zinc-900 hover:bg-red-950 border border-[#2A2A2A] rounded-sm hover:border-red-900 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                        className="p-1.5 bg-zinc-50 hover:bg-red-50 border border-zinc-200 rounded-sm hover:border-red-200 text-zinc-700 hover:text-red-700 transition-colors cursor-pointer"
                         title="Remove watch from stock"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -755,9 +755,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 ))}
 
                 {stock.length === 0 && (
-                  <div className="text-center py-10 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
-                    <ShieldAlert className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-                    <p className="text-xs text-zinc-500 uppercase font-mono">No stock registered in database.</p>
+                  <div className="text-center py-10 bg-white rounded-sm border border-zinc-200">
+                    <ShieldAlert className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
+                    <p className="text-xs text-zinc-700 uppercase font-mono">No stock registered in database.</p>
                   </div>
                 )}
               </div>
@@ -769,28 +769,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 2: APPRAISAL VALUATIONS */}
         {activeTab === 'valuations' && (
           <div className="space-y-4">
-            <div className="pb-2 border-b border-[#222]">
-              <h3 className="font-serif text-sm text-white uppercase tracking-wider font-bold">Client Valuation File Timelines</h3>
+            <div className="pb-2 border-b border-zinc-200">
+              <h3 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">Client Valuation File Timelines</h3>
             </div>
 
             <div className="space-y-4">
               {valuations.map((val) => (
-                <div key={val.id} className="p-6 bg-[#0F0F0F] border border-[#1A1A1A] rounded-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-[#1A1A1A] pb-3">
+                <div key={val.id} className="p-6 bg-white border border-zinc-200 rounded-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-zinc-200 pb-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-serif text-xs text-[#C5A880] uppercase tracking-wider font-bold">{val.name}</h4>
-                        <span className="text-[10px] text-zinc-600 font-mono">({val.location})</span>
+                        <span className="text-[10px] text-zinc-700 font-mono">({val.location})</span>
                       </div>
-                      <p className="text-[10px] text-zinc-500 font-mono mt-1">Ref: {val.id} | Contact: {val.preferredContact} ({val.email} / {val.phone})</p>
+                      <p className="text-[10px] text-zinc-700 font-mono mt-1">Ref: {val.id} | Contact: {val.preferredContact} ({val.email} / {val.phone})</p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <span className={`text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded ${
-                        val.status === 'Pending Review' ? 'bg-amber-950 text-amber-400' :
-                        val.status === 'Offered' ? 'bg-[#1D1A16] text-[#C5A880]' :
-                        val.status === 'Approved' ? 'bg-emerald-950 text-emerald-400' :
-                        'bg-red-950 text-red-400'
+                        val.status === 'Pending Review' ? 'bg-amber-50 text-amber-700' :
+                        val.status === 'Offered' ? 'bg-[#FAF6F0] text-[#C5A880]' :
+                        val.status === 'Approved' ? 'bg-emerald-50 text-emerald-700' :
+                        'bg-red-50 text-red-700'
                       }`}>
                         {val.status}
                       </span>
@@ -798,7 +798,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <select
                         value={val.status}
                         onChange={(e) => updateValuationStatus(val.id, e.target.value, val.adminNotes || '')}
-                        className="bg-[#151515] text-[10px] font-medium font-mono text-zinc-300 border border-[#2A2A2A] rounded px-2 py-1 focus:outline-none"
+                        className="bg-white text-[10px] font-medium font-mono text-zinc-700 border border-zinc-200 rounded px-2 py-1 focus:outline-none"
                       >
                         <option value="Pending Review">Set Pending Review</option>
                         <option value="Offered">Offer Indicative BuyPrice</option>
@@ -808,24 +808,24 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-400">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-700">
                     <div className="space-y-2">
                       <h5 className="font-serif text-[#C5A880] text-[10px] uppercase font-bold tracking-wider">Asset Specs</h5>
                       <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
-                        <div>BRAND: <span className="text-white font-bold">{val.brand}</span></div>
-                        <div>MODEL: <span className="text-white">{val.model}</span></div>
-                        <div>REF CODE: <span className="text-white">{val.reference}</span></div>
-                        <div>YEAR ACQ: <span className="text-white">{val.year}</span></div>
+                        <div>BRAND: <span className="text-zinc-950 font-bold">{val.brand}</span></div>
+                        <div>MODEL: <span className="text-zinc-950">{val.model}</span></div>
+                        <div>REF CODE: <span className="text-zinc-950">{val.reference}</span></div>
+                        <div>YEAR ACQ: <span className="text-zinc-950">{val.year}</span></div>
                         <div>DECLARED COND: <span className="text-[#C5A880]">{val.condition}</span></div>
-                        <div>BOX INCL: <span className="text-white">{val.box}</span></div>
-                        <div>PAPERS INCL: <span className="text-white">{val.papers}</span></div>
-                        <div>RECEIPT: <span className="text-white">{val.receipt}</span></div>
-                        <div className="col-span-2">SERVICE HISTORY: <span className="text-zinc-300">{val.serviceHistory}</span></div>
+                        <div>BOX INCL: <span className="text-zinc-950">{val.box}</span></div>
+                        <div>PAPERS INCL: <span className="text-zinc-950">{val.papers}</span></div>
+                        <div>RECEIPT: <span className="text-zinc-950">{val.receipt}</span></div>
+                        <div className="col-span-2">SERVICE HISTORY: <span className="text-zinc-700">{val.serviceHistory}</span></div>
                         <div className="col-span-2">DESIRED ASK-PRICE: <span className="text-emerald-500 font-bold font-sans">£{val.askingPrice}</span></div>
                       </div>
                       <div className="pt-2">
-                        <span className="block text-[10px] text-zinc-600 font-mono uppercase font-bold mb-1">Additional details</span>
-                        <p className="p-2.5 bg-[#0A0A0A] border border-[#1D1D1D] rounded text-[11.5px] italic text-zinc-300">
+                        <span className="block text-[10px] text-zinc-700 font-mono uppercase font-bold mb-1">Additional details</span>
+                        <p className="p-2.5 bg-zinc-50 border border-zinc-200 rounded text-[11.5px] italic text-zinc-700">
                           "{val.additionalDetails || 'No auxiliary comments.'}"
                         </p>
                       </div>
@@ -841,7 +841,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             <div 
                               key={label} 
                               onClick={() => setActivePhotoUrl(src)}
-                              className="aspect-square bg-zinc-950 rounded border border-[#222222] overflow-hidden cursor-zoom-in relative group"
+                              className="aspect-square bg-zinc-100 rounded border border-zinc-200 overflow-hidden cursor-zoom-in relative group"
                             >
                               <img 
                                 src={src} 
@@ -849,8 +849,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                 referrerPolicy="no-referrer"
                               />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-[10px] bg-black/80 font-mono border border-zinc-700 px-1.5 py-0.5 rounded text-white capitalize">{label}</span>
+                              <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-[10px] bg-white/95 font-mono border border-zinc-200 px-1.5 py-0.5 rounded text-zinc-950 capitalize">{label}</span>
                               </div>
                             </div>
                           ))}
@@ -858,13 +858,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                       {/* Admin Private appraisal thoughts */}
                       <div className="pt-2">
-                        <label className="block text-[10px] font-mono text-zinc-500 uppercase font-bold mb-1">Private Appraisal logs &amp; Dealer analysis</label>
+                        <label className="block text-[10px] font-mono text-zinc-700 uppercase font-bold mb-1">Private Appraisal logs &amp; Dealer analysis</label>
                         <textarea
                           placeholder="Log model serial lookup outcomes or dealer pricing bids..."
                           value={val.adminNotes || ''}
                           rows={2}
                           onChange={(e) => updateValuationStatus(val.id, val.status, e.target.value)}
-                          className="w-full bg-[#151515] border border-[#2A2A2A] rounded p-2 text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                          className="w-full bg-white border border-zinc-200 rounded p-2 text-xs text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                         ></textarea>
                       </div>
                     </div>
@@ -873,9 +873,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               ))}
 
               {valuations.length === 0 && (
-                <div className="text-center py-12 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
+                <div className="text-center py-12 bg-white rounded-sm border border-zinc-200">
                   <FileText className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                  <p className="text-xs text-zinc-500 uppercase font-mono">No valuations submitted through the web intake.</p>
+                  <p className="text-xs text-zinc-700 uppercase font-mono">No valuations submitted through the web intake.</p>
                 </div>
               )}
             </div>
@@ -885,28 +885,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 3: SOURCING REQUESTS */}
         {activeTab === 'sourcing' && (
           <div className="space-y-4">
-            <div className="pb-2 border-b border-[#222]">
-              <h3 className="font-serif text-sm text-white uppercase tracking-wider font-bold">Client Target Watch Sourcing logs</h3>
+            <div className="pb-2 border-b border-zinc-200">
+              <h3 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">Client Target Watch Sourcing logs</h3>
             </div>
 
             <div className="space-y-4">
               {sourcing.map((req) => (
-                <div key={req.id} className="p-6 bg-[#0F0F0F] border border-[#1A1A1A] rounded-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-[#1A1A1A] pb-3">
+                <div key={req.id} className="p-6 bg-white border border-zinc-200 rounded-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-zinc-200 pb-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-serif text-xs text-[#C5A880] uppercase tracking-wider font-bold">{req.name}</h4>
-                        <span className="text-[10px] text-zinc-500 font-mono">({req.phone})</span>
+                        <span className="text-[10px] text-zinc-700 font-mono">({req.phone})</span>
                       </div>
-                      <p className="text-[10px] text-zinc-500 font-mono mt-1">Ref: {req.id} | Email: {req.email} | Budget Target: <span className="text-emerald-500 font-bold">{req.budget}</span></p>
+                      <p className="text-[10px] text-zinc-700 font-mono mt-1">Ref: {req.id} | Email: {req.email} | Budget Target: <span className="text-emerald-500 font-bold">{req.budget}</span></p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <span className={`text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded ${
-                        req.status === 'Active Sourcing' ? 'bg-blue-950 text-blue-400' :
-                        req.status === 'Watch Found' ? 'bg-amber-950 text-[#C5A880]' :
-                        req.status === 'Completed' ? 'bg-emerald-950 text-emerald-400' :
-                        'bg-zinc-800 text-zinc-400'
+                        req.status === 'Active Sourcing' ? 'bg-blue-50 text-blue-700' :
+                        req.status === 'Watch Found' ? 'bg-amber-50 text-[#C5A880]' :
+                        req.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
+                        'bg-zinc-100 text-zinc-700'
                       }`}>
                         {req.status}
                       </span>
@@ -914,7 +914,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <select
                         value={req.status}
                         onChange={(e) => updateSourcingStatus(req.id, e.target.value, req.adminNotes || '')}
-                        className="bg-[#151515] text-[10px] font-semibold font-mono text-zinc-300 border border-[#2A2A2A] rounded px-2 py-1 focus:outline-none"
+                        className="bg-white text-[10px] font-semibold font-mono text-zinc-700 border border-zinc-200 rounded px-2 py-1 focus:outline-none"
                       >
                         <option value="Active Sourcing">Sourcing Active</option>
                         <option value="Watch Found">Sourced/Found</option>
@@ -924,33 +924,33 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-400">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-700">
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2 font-mono text-[10.5px]">
-                        <div>BRAND WANTED: <span className="text-white font-bold">{req.brand}</span></div>
-                        <div>MODEL REQUIRED: <span className="text-white">{req.model}</span></div>
-                        <div>CASE REF: <span className="text-white">{req.reference}</span></div>
-                        <div>YEAR PREFFERED: <span className="text-white">{req.year}</span></div>
-                        <div>DESIRED COND: <span className="text-white">{req.condition}</span></div>
-                        <div>BOX &amp; PAPERS: <span className="text-white">{req.boxPapers}</span></div>
+                        <div>BRAND WANTED: <span className="text-zinc-950 font-bold">{req.brand}</span></div>
+                        <div>MODEL REQUIRED: <span className="text-zinc-950">{req.model}</span></div>
+                        <div>CASE REF: <span className="text-zinc-950">{req.reference}</span></div>
+                        <div>YEAR PREFFERED: <span className="text-zinc-950">{req.year}</span></div>
+                        <div>DESIRED COND: <span className="text-zinc-950">{req.condition}</span></div>
+                        <div>BOX &amp; PAPERS: <span className="text-zinc-950">{req.boxPapers}</span></div>
                         <div>TIMEFRAME SPEC: <span className="text-[#C5A880] uppercase">{req.timeframe}</span></div>
                       </div>
                       <div className="pt-2">
-                        <span className="block text-[10px] text-zinc-600 font-mono uppercase font-bold mb-1">Additional instructions</span>
-                        <p className="p-2.5 bg-[#0A0A0A] border border-[#1D1D1D] rounded text-[11.5px] italic text-zinc-300">
+                        <span className="block text-[10px] text-zinc-700 font-mono uppercase font-bold mb-1">Additional instructions</span>
+                        <p className="p-2.5 bg-zinc-50 border border-zinc-200 rounded text-[11.5px] italic text-zinc-700">
                           "{req.notes || 'No auxiliary directions.'}"
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-mono text-zinc-500 uppercase font-bold">Wholesale trace records &amp; Dealer notes</label>
+                      <label className="block text-[10px] font-mono text-zinc-700 uppercase font-bold">Wholesale trace records &amp; Dealer notes</label>
                       <textarea
                         placeholder="Log wholesaler replies, quotes received from dealer platforms..."
                         value={req.adminNotes || ''}
                         rows={4}
                         onChange={(e) => updateSourcingStatus(req.id, req.status, e.target.value)}
-                        className="w-full bg-[#151515] border border-[#2A2A2A] rounded p-2.5 text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                        className="w-full bg-white border border-zinc-200 rounded p-2.5 text-xs text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                       ></textarea>
                     </div>
                   </div>
@@ -958,9 +958,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               ))}
 
               {sourcing.length === 0 && (
-                <div className="text-center py-12 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
+                <div className="text-center py-12 bg-white rounded-sm border border-zinc-200">
                   <Compass className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                  <p className="text-xs text-zinc-500 uppercase font-mono">No target watches requested via sourcing desk.</p>
+                  <p className="text-xs text-zinc-700 uppercase font-mono">No target watches requested via sourcing desk.</p>
                 </div>
               )}
             </div>
@@ -970,34 +970,34 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 4: CLIENT COMPLETED ORDERS */}
         {activeTab === 'orders' && (
           <div className="space-y-4">
-            <div className="pb-2 border-b border-[#222]">
-              <h3 className="font-serif text-sm text-white uppercase tracking-wider font-bold">Encrow Settled Transaction logs</h3>
+            <div className="pb-2 border-b border-zinc-200">
+              <h3 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">Encrow Settled Transaction logs</h3>
             </div>
 
             <div className="space-y-4">
               {orders.map((ord) => (
-                <div key={ord.id} className="p-5 bg-[#0F0F0F] border border-[#1F1F1F] rounded-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-[#1A1A1A] pb-3">
+                <div key={ord.id} className="p-5 bg-white border border-zinc-200 rounded-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-zinc-200 pb-3">
                     <div>
                       <span className="text-[10px] font-mono tracking-widest text-[#C5A880] uppercase">TRANSACTION SECURED</span>
-                      <h4 className="font-serif text-sm text-white font-bold uppercase mt-1">{ord.clientName}</h4>
-                      <p className="text-[10px] text-zinc-500 font-mono">Reference: {ord.id} | Date: {new Date(ord.createdAt).toLocaleDateString()}</p>
+                      <h4 className="font-serif text-sm text-zinc-950 font-bold uppercase mt-1">{ord.clientName}</h4>
+                      <p className="text-[10px] text-zinc-700 font-mono">Reference: {ord.id} | Date: {new Date(ord.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10.5px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-1 rounded border border-emerald-900 uppercase">
+                      <span className="text-[10.5px] text-emerald-700 font-mono font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200 uppercase">
                         {ord.paymentStatus} via {ord.paymentMethod}
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-400">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-zinc-700">
                     <div className="space-y-2">
                       <h5 className="font-serif text-[#C5A880] text-[10px] uppercase font-bold tracking-wider">Asset Transacted</h5>
-                      <div className="p-3.5 bg-[#0A0A0A] rounded border border-[#1F1F1F] flex justify-between items-center">
+                      <div className="p-3.5 bg-zinc-50 rounded border border-zinc-200 flex justify-between items-center">
                         <div>
-                          <span className="text-[9.5px] font-mono text-zinc-500 uppercase">{ord.watchDetails.brand}</span>
-                          <h4 className="font-serif text-xs text-white uppercase font-bold mt-0.5">{ord.watchDetails.model}</h4>
-                          <span className="text-[9px] font-mono text-zinc-600">Case Ref: {ord.watchDetails.reference}</span>
+                          <span className="text-[9.5px] font-mono text-zinc-700 uppercase">{ord.watchDetails.brand}</span>
+                          <h4 className="font-serif text-xs text-zinc-950 uppercase font-bold mt-0.5">{ord.watchDetails.model}</h4>
+                          <span className="text-[9px] font-mono text-zinc-700">Case Ref: {ord.watchDetails.reference}</span>
                         </div>
                         <div className="text-right font-serif text-[#C5A880] font-bold text-sm">
                           £{ord.watchDetails.price.toLocaleString()}
@@ -1007,11 +1007,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                     <div className="space-y-2">
                       <h5 className="font-serif text-[#C5A880] text-[10px] uppercase font-bold tracking-wider">Client Shipment Coordinates</h5>
-                      <div className="font-mono text-[10.5px] text-zinc-300">
-                        <p>Name: <span className="text-white">{ord.clientName}</span></p>
-                        <p>Email: <span className="text-white">{ord.clientEmail}</span></p>
-                        <p>Contact Phone: <span className="text-white">{ord.clientPhone}</span></p>
-                        <p className="mt-1 border-t border-[#1C1C1C] pt-1">
+                      <div className="font-mono text-[10.5px] text-zinc-700">
+                        <p>Name: <span className="text-zinc-950">{ord.clientName}</span></p>
+                        <p>Email: <span className="text-zinc-950">{ord.clientEmail}</span></p>
+                        <p>Contact Phone: <span className="text-zinc-950">{ord.clientPhone}</span></p>
+                        <p className="mt-1 border-t border-zinc-200 pt-1">
                           Street Address: {ord.clientAddress}, {ord.clientCity}, {ord.clientPostcode}, UK.
                         </p>
                       </div>
@@ -1021,9 +1021,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               ))}
 
               {orders.length === 0 && (
-                <div className="text-center py-12 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
+                <div className="text-center py-12 bg-white rounded-sm border border-zinc-200">
                   <ListOrdered className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                  <p className="text-xs text-zinc-500 uppercase font-mono">No settled ecommerce purchases recorded.</p>
+                  <p className="text-xs text-zinc-700 uppercase font-mono">No settled ecommerce purchases recorded.</p>
                 </div>
               )}
             </div>
@@ -1033,30 +1033,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 5: CONTACT DESK MESSAGES */}
         {activeTab === 'messages' && (
           <div className="space-y-4">
-            <div className="pb-2 border-b border-[#222]">
-              <h3 className="font-serif text-sm text-white uppercase tracking-wider font-bold">General Concierge interaction logs</h3>
+            <div className="pb-2 border-b border-zinc-200">
+              <h3 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">General Concierge interaction logs</h3>
             </div>
 
             <div className="space-y-3">
               {contacts.map((msg) => (
-                <div key={msg.id} className="p-5 bg-[#0F0F0F] rounded border border-[#1F1F1F] space-y-3">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-[#1C1C1C] pb-2 text-xs font-mono">
+                <div key={msg.id} className="p-5 bg-white rounded border border-zinc-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-zinc-200 pb-2 text-xs font-mono">
                     <div>
-                      <span className="text-white font-serif font-bold text-xs uppercase tracking-wider">{msg.name}</span>
-                      <span className="text-zinc-600 block sm:inline sm:ml-4">{msg.email} / {msg.phone}</span>
+                      <span className="text-zinc-950 font-serif font-bold text-xs uppercase tracking-wider">{msg.name}</span>
+                      <span className="text-zinc-700 block sm:inline sm:ml-4">{msg.email} / {msg.phone}</span>
                     </div>
                     <span className="text-zinc-650 font-sans text-[10.5px]">{new Date(msg.createdAt).toLocaleString()}</span>
                   </div>
-                  <p className="text-xs text-zinc-300 italic whitespace-pre-wrap leading-relaxed">
+                  <p className="text-xs text-zinc-700 italic whitespace-pre-wrap leading-relaxed">
                     "{msg.message}"
                   </p>
                 </div>
               ))}
 
               {contacts.length === 0 && (
-                <div className="text-center py-12 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
+                <div className="text-center py-12 bg-white rounded-sm border border-zinc-200">
                   <MessageSquare className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                  <p className="text-xs text-zinc-500 uppercase font-mono">No contact submissions logged.</p>
+                  <p className="text-xs text-zinc-700 uppercase font-mono">No contact submissions logged.</p>
                 </div>
               )}
             </div>
@@ -1066,34 +1066,34 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 6: AUTOMATED SMTP EMULATED TRANSACTION LOGS (Audit trail proving automated notifications are active!) */}
         {activeTab === 'emails' && (
           <div className="space-y-4">
-            <div className="pb-2 border-b border-[#222]">
-              <h3 className="font-serif text-sm text-white uppercase tracking-wider font-bold">Dispatched SMTP automated notification outbox</h3>
-              <p className="text-[10px] text-zinc-500 font-mono uppercase mt-1">Simulated email dispatch logs verifying correct transactional notification transmission.</p>
+            <div className="pb-2 border-b border-zinc-200">
+              <h3 className="font-serif text-sm text-zinc-950 uppercase tracking-wider font-bold">Dispatched SMTP automated notification outbox</h3>
+              <p className="text-[10px] text-zinc-700 font-mono uppercase mt-1">Simulated email dispatch logs verifying correct transactional notification transmission.</p>
             </div>
 
             <div className="space-y-4">
               {notifications.map((email: any) => (
-                <div key={email.id} className="p-4 bg-[#080808] border border-[#222222] rounded-sm space-y-2 text-xs font-mono">
-                  <div className="flex flex-wrap justify-between items-center gap-2 text-[10px] bg-[#111111] p-3 border border-[#1F1F1F]">
+                <div key={email.id} className="p-4 bg-zinc-50 border border-zinc-200 rounded-sm space-y-2 text-xs font-mono">
+                  <div className="flex flex-wrap justify-between items-center gap-2 text-[10px] bg-zinc-50 p-3 border border-zinc-200">
                     <div>
                       <span className="text-[#C5A880] uppercase tracking-wider font-bold">SMTP OUTBOUND STATUS: SENT EXECUTED</span>
-                      <span className="text-zinc-600 block mt-1">To: {email.to} | Subj: {email.subject}</span>
+                      <span className="text-zinc-700 block mt-1">To: {email.to} | Subj: {email.subject}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-zinc-500 block text-[9.5px]">Attachments: {email.attachmentsCount || 0}</span>
-                      <span className="text-zinc-500 block mt-1">{new Date(email.timestamp).toLocaleString()}</span>
+                      <span className="text-zinc-700 block text-[9.5px]">Attachments: {email.attachmentsCount || 0}</span>
+                      <span className="text-zinc-700 block mt-1">{new Date(email.timestamp).toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="p-4 bg-black rounded text-[11px] text-zinc-400 font-mono overflow-x-auto whitespace-pre">
+                  <div className="p-4 bg-zinc-100 rounded text-[11px] text-zinc-700 font-mono overflow-x-auto whitespace-pre">
                     {email.body}
                   </div>
                 </div>
               ))}
 
               {notifications.length === 0 && (
-                <div className="text-center py-12 bg-[#0F0F0F] rounded-sm border border-[#1A1A1A]">
+                <div className="text-center py-12 bg-white rounded-sm border border-zinc-200">
                   <Mail className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                  <p className="text-xs text-zinc-500 uppercase font-mono">No automated notifications sent today.</p>
+                  <p className="text-xs text-zinc-700 uppercase font-mono">No automated notifications sent today.</p>
                 </div>
               )}
             </div>
@@ -1105,16 +1105,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       {/* Lightbox for Appraisal Photo Viewers */}
       {activePhotoUrl && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 cursor-zoom-out"
+          className="fixed inset-0 z-50 bg-white/95 flex items-center justify-center p-4 cursor-zoom-out"
           onClick={() => setActivePhotoUrl(null)}
         >
           <img 
             src={activePhotoUrl} 
             alt="Asset inspection enlarger" 
-            className="max-w-full max-h-[90vh] object-contain border border-[#333]"
+            className="max-w-full max-h-[90vh] object-contain border border-zinc-300"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute top-4 right-4 text-white text-xs font-mono uppercase tracking-widest bg-black/80 px-4 py-2 border border-[#444] rounded">
+          <div className="absolute top-4 right-4 text-zinc-950 text-xs font-mono uppercase tracking-widest bg-white/95 px-4 py-2 border border-zinc-300 rounded">
             Click anywhere to exit inspection
           </div>
         </div>
@@ -1125,22 +1125,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         const watch = stock.find(w => w.id === deleteConfirmId);
         if (!watch) return null;
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fade-in">
-            <div className="w-full max-w-md bg-[#0F0F0F] border border-zinc-800 rounded-sm p-6 shadow-2xl space-y-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/95 backdrop-blur-xs animate-fade-in">
+            <div className="w-full max-w-md bg-white border border-zinc-200 rounded-sm p-6 shadow-2xl space-y-6">
               <div className="space-y-2">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A880] font-bold flex items-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 text-red-500" />
                   CONFIRM PERMANENT REMOVAL
                 </span>
-                <h3 className="font-serif text-lg text-white font-bold uppercase tracking-wide">
+                <h3 className="font-serif text-lg text-zinc-950 font-bold uppercase tracking-wide">
                   Delete {watch.brand} {watch.model}?
                 </h3>
-                <p className="text-xs text-zinc-400 font-mono">
+                <p className="text-xs text-zinc-700 font-mono">
                   Ref: {watch.reference || 'N/A'} | Price: £{watch.price.toLocaleString()}
                 </p>
               </div>
 
-              <div className="p-3.5 bg-red-950/20 border border-red-900/40 text-red-400 text-xs rounded-sm font-semibold">
+              <div className="p-3.5 bg-red-50 border border-red-200/40 text-red-700 text-xs rounded-sm font-semibold">
                 This action is permanent and cannot be undone. It will remove this timepiece and its specifications immediately from the live showroom catalog.
               </div>
 
@@ -1148,14 +1148,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
-                  className="flex-1 px-4 py-2.5 border border-[#2A2A2A] rounded bg-[#151515] hover:bg-neutral-950 text-zinc-300 hover:text-white tracking-widest text-[10px] uppercase font-bold transition-all cursor-pointer"
+                  className="flex-1 px-4 py-2.5 border border-zinc-200 rounded bg-white hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 tracking-widest text-[10px] uppercase font-bold transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => deleteWatch(deleteConfirmId)}
-                  className="flex-1 bg-red-650 hover:bg-red-700 text-white font-bold uppercase tracking-widest text-[10px] py-2.5 rounded shadow transition-all cursor-pointer"
+                  className="flex-1 bg-red-650 hover:bg-red-700 text-zinc-950 font-bold uppercase tracking-widest text-[10px] py-2.5 rounded shadow transition-all cursor-pointer"
                 >
                   Confirm Delete
                 </button>
