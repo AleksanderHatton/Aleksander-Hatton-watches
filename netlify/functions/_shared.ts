@@ -55,10 +55,10 @@ export function requireBody(event: any) {
 export async function sendEmail(params: { subject: string; html: string; to?: string; replyTo?: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || 'Aleksander Hatton <onboarding@resend.dev>';
-  const to = params.to || process.env.ADMIN_EMAIL;
+  const to = params.to || process.env.ADMIN_EMAIL || 'inquiries@ahwatches.com';
 
   if (!apiKey || !to) {
-    console.warn('Email skipped. Missing RESEND_API_KEY or ADMIN_EMAIL.');
+    console.warn('Email skipped. Missing RESEND_API_KEY.');
     return;
   }
 
