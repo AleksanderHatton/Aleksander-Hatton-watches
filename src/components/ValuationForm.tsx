@@ -209,7 +209,7 @@ export default function ValuationForm() {
                   required
                   value={formData.email}
                   onChange={handleTextChange}
-                  placeholder="e.g. aleksanderhatton@aleksanderhatton.co.uk" 
+                  placeholder="e.g. yourname@example.com" 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-800 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 select-none text-sm"
                 />
               </div>
@@ -567,7 +567,7 @@ export default function ValuationForm() {
               <span>Automated notifications synchronized</span>
             </div>
             <p className="text-[10px] text-zinc-500 font-mono leading-relaxed mt-2 uppercase font-semibold">
-              • Direct email containing high-res horology snapshots sent to our Shefield appraisals team: <strong>leohatton28@gmail.com</strong>.<br />
+              • Direct email containing high-res horology snapshots sent to our Shefield appraisals team: <strong>inquiries@ahwatches.com</strong>.<br />
               • Auto-conf email dispatched to your personal details.
             </p>
           </div>
