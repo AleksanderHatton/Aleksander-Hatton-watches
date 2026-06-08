@@ -506,8 +506,8 @@ export default function App() {
                   </p>
                   <div className="text-xs font-mono text-[#C5A880] space-y-1.5 uppercase font-semibold">
                     <p className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Sheffield, South Yorkshire, UK</p>
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> +44 (0) 114 2555 777</p>
-                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> leohatton28@gmail.com</p>
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> Phone line temporarily unavailable — landline being updated</p>
+                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> inquiries@ahwatches.com</p>
                   </div>
                 </div>
 
@@ -734,7 +734,7 @@ export default function App() {
                             required
                             value={contactForm.email}
                             onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                            placeholder="e.g. leohatton28@gmail.com" 
+                            placeholder="e.g. yourname@example.com" 
                             className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-zinc-800 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/35 transition-all text-sm"
                           />
                         </div>
@@ -802,11 +802,11 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-3">
                         <Phone className="w-4 h-4 text-[#C5A880]" />
-                        <a href="tel:+441142555777" className="hover:text-black hover:underline transition-colors font-medium">+44 (0) 114 2555 777</a>
+                        <span className="font-medium text-zinc-700">Phone line temporarily unavailable — landline being updated</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Mail className="w-4 h-4 text-[#C5A880]" />
-                        <a href="mailto:leohatton28@gmail.com" className="hover:text-black hover:underline transition-colors font-medium">leohatton28@gmail.com</a>
+                        <a href="mailto:inquiries@ahwatches.com" className="hover:text-black hover:underline transition-colors font-medium">inquiries@ahwatches.com</a>
                       </div>
                     </div>
                   </div>
