@@ -89,25 +89,24 @@ export default function App() {
   const [contactSending, setContactSending] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
 
-  cconst brandCategories = [
-  'Rolex',
-  'Omega',
-  'Cartier',
-  'Tudor',
-  'IWC',
-  'Breitling',
-  'TAG Heuer',
-  'Hublot',
-  'Grand Seiko',
-  'Tissot',
-  'Hamilton',
-  'Longines',
-  'Seiko',
-  'Citizen',
-  'Orient',
-  'Timex' ,
-  'Other Luxury Watches'
-];
+  const brandCategories = [
+    'Rolex',
+    'Omega',
+    'Cartier',
+    'Tudor',
+    'IWC',
+    'Breitling',
+    'TAG Heuer',
+    'Hublot',
+    'Grand Seiko',
+    'Tissot',
+    'Hamilton',
+    'Longines',
+    'Seiko',
+    'Citizen',
+    'Orient',
+    'Timex'
+  ];
 
   // Load stock immediately
   const fetchStock = async () => {
@@ -363,7 +362,7 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-4">
-                  {brandCategories.slice(0, 12).map((brandName) => {
+                  {brandCategories.map((brandName) => {
                     const isSoldOut = checkBrandSoldOut(brandName);
                     return (
                       <div 
