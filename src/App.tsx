@@ -89,11 +89,25 @@ export default function App() {
   const [contactSending, setContactSending] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
 
-  const brandCategories = [
-    'Rolex', 'Patek Philippe', 'Audemars Piguet', 'Cartier', 'Omega', 'Tudor', 
-    'Breitling', 'Vacheron Constantin', 'Richard Mille', 'IWC', 'Jaeger-LeCoultre', 
-    'Tag Heuer', 'Panerai', 'Hublot', 'A. Lange & Söhne', 'Grand Seiko', 'Other Luxury Watches'
-  ];
+  cconst brandCategories = [
+  'Rolex',
+  'Omega',
+  'Cartier',
+  'Tudor',
+  'IWC',
+  'Breitling',
+  'TAG Heuer',
+  'Hublot',
+  'Grand Seiko',
+  'Tissot',
+  'Hamilton',
+  'Longines',
+  'Seiko',
+  'Citizen',
+  'Orient',
+  'Timex' ,
+  'Other Luxury Watches'
+];
 
   // Load stock immediately
   const fetchStock = async () => {
