@@ -2,6 +2,99 @@ import React, { useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { Upload, ChevronRight, CheckCircle, ShieldAlert, FileText, Image as ImageIcon, Sparkles } from 'lucide-react';
 
+const valuationBrands = [
+  'A. Lange & Söhne',
+  'Accurist',
+  'Alpina',
+  'Anne Klein',
+  'Armani Exchange',
+  'Audemars Piguet',
+  'Avi-8',
+  'Ball',
+  'Baume & Mercier',
+  'Bell & Ross',
+  'Blancpain',
+  'BOSS',
+  'Breguet',
+  'Breitling',
+  'Bulova',
+  'Bvlgari',
+  'Calvin Klein',
+  'Cartier',
+  'Casio',
+  'Certina',
+  'Chanel',
+  'Chopard',
+  'Christopher Ward',
+  'Citizen',
+  'Corum',
+  'Daniel Wellington',
+  'Diesel',
+  'Doxa',
+  'Emporio Armani',
+  'Eterna',
+  'Festina',
+  'Fossil',
+  'Franck Muller',
+  'Frederique Constant',
+  'Garmin',
+  'G-Shock',
+  'Girard-Perregaux',
+  'Grand Seiko',
+  'Gucci',
+  'Guess',
+  'Hamilton',
+  'Hublot',
+  'Hugo Boss',
+  'IWC',
+  'Jacob & Co.',
+  'Jaeger-LeCoultre',
+  'Junghans',
+  'Lacoste',
+  'Lorus',
+  'Longines',
+  'Maurice Lacroix',
+  'Michael Kors',
+  'Mido',
+  'Mondaine',
+  'Montblanc',
+  'Movado',
+  'Nixon',
+  'Nomos Glashütte',
+  'Oakley',
+  'Omega',
+  'Orient',
+  'Oris',
+  'Panerai',
+  'Parmigiani Fleurier',
+  'Patek Philippe',
+  'Piaget',
+  'Rado',
+  'Raymond Weil',
+  'Richard Mille',
+  'Roger Dubuis',
+  'Rolex',
+  'Rotary',
+  'Sekonda',
+  'Seiko',
+  'SevenFriday',
+  'Skagen',
+  'Sinn',
+  'Squale',
+  'Swatch',
+  'TAG Heuer',
+  'Tissot',
+  'Tommy Hilfiger',
+  'Tudor',
+  'U-Boat',
+  'Ulysse Nardin',
+  'Vacheron Constantin',
+  'Victorinox',
+  'Wenger',
+  'Zenith',
+  'Other / Not listed'
+];
+
 export default function ValuationForm() {
   const [formData, setFormData] = useState({
     name: '',
@@ -274,23 +367,9 @@ export default function ValuationForm() {
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-850 focus:outline-none focus:border-[#C5A880] transition-all text-sm"
                 >
                   <option value="">-- Click to select Brand --</option>
-                  <option value="Rolex">Rolex</option>
-                  <option value="Patek Philippe">Patek Philippe</option>
-                  <option value="Audemars Piguet">Audemars Piguet</option>
-                  <option value="Cartier">Cartier</option>
-                  <option value="Omega">Omega</option>
-                  <option value="Tudor">Tudor</option>
-                  <option value="Breitling">Breitling</option>
-                  <option value="Vacheron Constantin">Vacheron Constantin</option>
-                  <option value="Richard Mille">Richard Mille</option>
-                  <option value="IWC">IWC</option>
-                  <option value="Jaeger-LeCoultre">Jaeger-LeCoultre</option>
-                  <option value="Tag Heuer">Tag Heuer</option>
-                  <option value="Panerai">Panerai</option>
-                  <option value="Hublot">Hublot</option>
-                  <option value="A. Lange & Söhne">A. Lange & Söhne</option>
-                  <option value="Grand Seiko">Grand Seiko</option>
-                  <option value="Other Luxury Watches">Other Luxury Watches</option>
+                  {valuationBrands.map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
+                  ))}
                 </select>
               </div>
 
