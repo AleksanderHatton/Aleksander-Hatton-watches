@@ -1,6 +1,6 @@
 {
   "name": "Aleksander Hatton",
-  "description": "Luxury watch dealership based in Sheffield. Sourced, sold, and valued with discretion. Sourcing from a network of 50+ watch wholesalers.",
+  "description": "Independent watch dealer based in Sheffield. Buy, sell, value and source watches across a wide range of brands. Working, broken, damaged and non-running watches welcome for valuation.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
