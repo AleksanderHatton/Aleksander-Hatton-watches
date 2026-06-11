@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Compass, ShieldAlert, Sparkles, Send, CheckCircle, Award } from 'lucide-react';
+import { Compass, ShieldAlert, Sparkles, CheckCircle, Award, Phone, MessageCircle } from 'lucide-react';
 import { apiFetch } from '../lib/api';
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL } from '../lib/contact';
 
 export default function SourcingForm() {
   const [formData, setFormData] = useState({
@@ -65,12 +66,28 @@ export default function SourcingForm() {
           {/* Header & Sourcing Network Intro */}
           <div className="space-y-6 text-center max-w-3xl mx-auto">
             <h1 className="font-serif text-3xl sm:text-4xl text-zinc-900 tracking-widest uppercase font-bold">SOURCE A TIMEPIECE</h1>
-            <p className="text-xs text-[#C5A880] font-mono tracking-wider uppercase font-semibold">Bespoke Acquisition &amp; Global Wholesaler Access</p>
+            <p className="text-xs text-[#C5A880] font-mono tracking-wider uppercase font-semibold">Specific Watch Sourcing</p>
             <div className="w-12 h-[1.5px] bg-[#C5A880] mx-auto"></div>
             
             <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed font-sans text-left sm:text-center font-medium">
-              Looking for a specific watch? Through our network of 50+ trusted watch wholesalers and dealers, Aleksander Hatton can help source sought-after timepieces at competitive market prices. Where possible, we use our relationships to secure favourable pricing, allowing clients to access watches efficiently while benefiting from our sourcing expertise.
+              Looking for a specific watch? Aleksander Hatton can help source watches across a wide range of brands and budgets through trusted watch dealers, wholesalers and collectors. Submit what you want, or call us directly if you want to discuss a specific model.
             </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+              <a
+                href={CONTACT_PHONE_TEL}
+                className="inline-flex items-center justify-center gap-2 bg-[#C5A880] hover:bg-[#D5B890] text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-sm shadow-sm"
+              >
+                <Phone className="w-4 h-4" /> Call {CONTACT_PHONE_DISPLAY}
+              </a>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-sm shadow-sm"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp Us
+              </a>
+            </div>
           </div>
 
           {error && (
@@ -88,7 +105,7 @@ export default function SourcingForm() {
               <div className="bg-white border border-zinc-200 shadow-sm p-6 sm:p-8 space-y-6">
                 <h2 className="text-[#C5A880] font-serif text-sm tracking-widest uppercase pb-2 border-b border-zinc-100 flex items-center gap-2 font-bold">
                   <Compass className="w-4 h-4" />
-                  Acquisition briefing brief
+                  Sourcing Request
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -126,7 +143,7 @@ export default function SourcingForm() {
                       required
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="e.g. +44 7123 456789" 
+                      placeholder="e.g. 07649 478871" 
                       className="w-full bg-zinc-50 border border-zinc-250 rounded-sm px-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#C5A880] focus:bg-white transition-all font-semibold"
                     />
                   </div>
@@ -217,7 +234,7 @@ export default function SourcingForm() {
                       name="budget" 
                       value={formData.budget}
                       onChange={handleChange}
-                      placeholder="e.g. £15,000 - £18,000" 
+                      placeholder="e.g. £500 - £2,000 or £15,000 - £18,000" 
                       className="w-full bg-zinc-50 border border-zinc-250 rounded-sm px-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#C5A880] focus:bg-white transition-all font-semibold"
                     />
                   </div>
@@ -237,13 +254,13 @@ export default function SourcingForm() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-bold">Additional Client specifications</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-bold">Additional Details</label>
                     <textarea 
                       name="notes" 
                       rows={4}
                       value={formData.notes}
                       onChange={handleChange}
-                      placeholder="e.g. Sourcing dial preferences, bezel configurations, or specific serial years..." 
+                      placeholder="Tell us the brand, model, preferred colour, condition, budget and anything you do not want." 
                       className="w-full bg-zinc-50 border border-zinc-250 rounded-sm px-4 py-3 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#C5A880] focus:bg-white transition-all font-semibold resize-none"
                     ></textarea>
                   </div>
@@ -263,7 +280,7 @@ export default function SourcingForm() {
                     disabled={loading}
                     className="bg-[#C5A880] hover:bg-[#D5B890] disabled:bg-[#FAF6F0] disabled:text-zinc-300 text-black font-semibold text-xs uppercase tracking-widest px-8 py-3.5 rounded-sm transition-all duration-300 w-full cursor-pointer font-bold"
                   >
-                    {loading ? 'DISPATCHING TO DEALER SYSTEM...' : 'CONFIRM ACQUISITION INSTRUCTIONS'}
+                    {loading ? 'SUBMITTING REQUEST...' : 'SUBMIT SOURCING REQUEST'}
                   </button>
                 </div>
               </div>
