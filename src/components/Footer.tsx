@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Phone, MapPin, ShieldAlert, Award, Compass, Instagram, Linkedin, Clock } from 'lucide-react';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL } from '../lib/contact';
 
 interface FooterProps {
   setView: (view: string) => void;
@@ -32,11 +33,11 @@ export default function Footer({ setView, openPolicies }: FooterProps) {
                 Aleksander Hatton
               </h2>
               <span className="text-[10px] font-mono tracking-widest text-[#9A8F80] uppercase mt-0.5">
-                DISCREET HOROLOGISTS &amp; VALUERS
+                INDEPENDENT WATCH DEALER
               </span>
             </div>
             <p className="text-xs text-zinc-500 leading-relaxed max-w-sm">
-              Established in Sheffield in 2025. Aleksander Hatton helps clients buy, sell, value, and source premium timepieces. Our operations reside strictly within digital and physical bounds of trust and discretion.
+              Established in Sheffield in 2025. Aleksander Hatton helps clients buy, sell, value, and source watches across a wide range of brands and price points. Working, broken, damaged and non-running watches are welcome for valuation.
             </p>
             <div className="flex items-center space-x-4">
               <a 
@@ -144,16 +145,16 @@ export default function Footer({ setView, openPolicies }: FooterProps) {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-[#C5A880] shrink-0" />
-                <span className="font-semibold text-zinc-700">Phone line temporarily unavailable — landline being updated</span>
+                <a href={CONTACT_PHONE_TEL} className="font-semibold text-zinc-700 hover:text-zinc-950 transition-colors">{CONTACT_PHONE_DISPLAY}</a>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#C5A880] shrink-0" />
-                <a href="mailto:inquiries@ahwatches.com" className="hover:text-zinc-950 transition-colors font-semibold">inquiries@ahwatches.com</a>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-zinc-950 transition-colors font-semibold">{CONTACT_EMAIL}</a>
               </div>
               <div className="pt-3 border-t border-zinc-200 text-[10px] text-zinc-500 leading-relaxed font-mono">
                 BY APPOINTMENT ONLY<br />
                 Mon – Fri: 09:00 – 18:00 BST<br />
-                Saturday: Private viewings only.
+                Saturday: Private viewings and home appointments by booking.
               </div>
             </div>
           </div>
