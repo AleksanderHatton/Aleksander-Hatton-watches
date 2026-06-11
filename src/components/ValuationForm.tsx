@@ -1,99 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
-import { Upload, ChevronRight, CheckCircle, ShieldAlert, FileText, Image as ImageIcon, Sparkles } from 'lucide-react';
-
-const valuationBrands = [
-  'A. Lange & Söhne',
-  'Accurist',
-  'Alpina',
-  'Anne Klein',
-  'Armani Exchange',
-  'Audemars Piguet',
-  'Avi-8',
-  'Ball',
-  'Baume & Mercier',
-  'Bell & Ross',
-  'Blancpain',
-  'BOSS',
-  'Breguet',
-  'Breitling',
-  'Bulova',
-  'Bvlgari',
-  'Calvin Klein',
-  'Cartier',
-  'Casio',
-  'Certina',
-  'Chanel',
-  'Chopard',
-  'Christopher Ward',
-  'Citizen',
-  'Corum',
-  'Daniel Wellington',
-  'Diesel',
-  'Doxa',
-  'Emporio Armani',
-  'Eterna',
-  'Festina',
-  'Fossil',
-  'Franck Muller',
-  'Frederique Constant',
-  'Garmin',
-  'G-Shock',
-  'Girard-Perregaux',
-  'Grand Seiko',
-  'Gucci',
-  'Guess',
-  'Hamilton',
-  'Hublot',
-  'Hugo Boss',
-  'IWC',
-  'Jacob & Co.',
-  'Jaeger-LeCoultre',
-  'Junghans',
-  'Lacoste',
-  'Lorus',
-  'Longines',
-  'Maurice Lacroix',
-  'Michael Kors',
-  'Mido',
-  'Mondaine',
-  'Montblanc',
-  'Movado',
-  'Nixon',
-  'Nomos Glashütte',
-  'Oakley',
-  'Omega',
-  'Orient',
-  'Oris',
-  'Panerai',
-  'Parmigiani Fleurier',
-  'Patek Philippe',
-  'Piaget',
-  'Rado',
-  'Raymond Weil',
-  'Richard Mille',
-  'Roger Dubuis',
-  'Rolex',
-  'Rotary',
-  'Sekonda',
-  'Seiko',
-  'SevenFriday',
-  'Skagen',
-  'Sinn',
-  'Squale',
-  'Swatch',
-  'TAG Heuer',
-  'Tissot',
-  'Tommy Hilfiger',
-  'Tudor',
-  'U-Boat',
-  'Ulysse Nardin',
-  'Vacheron Constantin',
-  'Victorinox',
-  'Wenger',
-  'Zenith',
-  'Other / Not listed'
-];
+import { VALUATION_BRANDS } from '../lib/brands';
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL } from '../lib/contact';
+import { Upload, CheckCircle, ShieldAlert, Sparkles, Phone, MessageCircle } from 'lucide-react';
 
 export default function ValuationForm() {
   const [formData, setFormData] = useState({
@@ -106,7 +15,7 @@ export default function ValuationForm() {
     model: '',
     reference: '',
     year: '',
-    condition: 'Excellent',
+    condition: 'Working',
     box: 'Unsure',
     papers: 'Unsure',
     receipt: 'Unsure',
@@ -223,8 +132,8 @@ export default function ValuationForm() {
     setLoading(true);
     setError('');
 
-    if (!formData.name || !formData.email || !formData.phone || !formData.brand || !formData.model) {
-      setError('Please fill in all mandatory customer and watch profile details.');
+    if (!formData.name || !formData.email || !formData.phone || !formData.brand) {
+      setError('Please fill in your name, email, phone number and watch brand. If you do not know the model, leave it blank.');
       setLoading(false);
       window.scrollTo({ top: 300, behavior: 'smooth' });
       return;
@@ -232,6 +141,7 @@ export default function ValuationForm() {
 
     const payload = {
       ...formData,
+      model: formData.model.trim() || 'Model not specified',
       askingPrice: formData.pleaseAdvise ? 'Unsure / Please advise' : formData.askingPrice,
       photos
     };
@@ -245,26 +155,48 @@ export default function ValuationForm() {
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setError('Submitting appraisal details failed. Check connection or file capacities and try again.');
+      setError('Submitting valuation details failed. Check your connection or photo sizes and try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div id="sell-your-watch" className="max-w-4xl mx-auto px-4 py-8">
       
       {!success ? (
         <form onSubmit={handleSubmit} className="space-y-10">
           
           {/* Header Segment */}
-          <div className="text-center max-w-2xl mx-auto space-y-4">
-            <h1 className="font-serif text-3xl sm:text-4xl text-zinc-900 tracking-widest uppercase font-bold">SELL YOUR WATCH</h1>
-            <p className="text-xs text-[#C5A880] font-mono tracking-wider uppercase font-semibold">Indicative Valuation &amp; Acquisition Protocol</p>
+          <div className="text-center max-w-3xl mx-auto space-y-5">
+            <h1 className="font-serif text-3xl sm:text-4xl text-zinc-900 tracking-widest uppercase font-bold">SELL YOUR WATCH IN SHEFFIELD</h1>
+            <p className="text-xs text-[#C5A880] font-mono tracking-wider uppercase font-semibold">Free Watch Valuation Request</p>
             <div className="w-12 h-[1px] bg-[#C5A880] mx-auto my-3"></div>
-            <p className="text-xs sm:text-sm text-zinc-650 leading-relaxed font-sans">
-              Looking to sell your watch? Submit the details below and our team will review the information and contact you with an indicative valuation.
+            <p className="text-sm sm:text-base text-zinc-650 leading-relaxed font-sans max-w-2xl mx-auto">
+              Submit your watch details and photos for a free indicative valuation. We consider all brands and conditions, including working, broken, damaged and non-running watches.
             </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono uppercase tracking-wider text-zinc-700">
+              <span className="border border-zinc-200 bg-white px-3 py-2 rounded-sm">All brands</span>
+              <span className="border border-zinc-200 bg-white px-3 py-2 rounded-sm">Broken welcome</span>
+              <span className="border border-zinc-200 bg-white px-3 py-2 rounded-sm">Private viewings</span>
+              <span className="border border-zinc-200 bg-white px-3 py-2 rounded-sm">Home visits by booking</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+              <a
+                href={CONTACT_PHONE_TEL}
+                className="inline-flex items-center justify-center gap-2 bg-[#C5A880] hover:bg-[#D5B890] text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-sm shadow-sm"
+              >
+                <Phone className="w-4 h-4" /> Call {CONTACT_PHONE_DISPLAY}
+              </a>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-sm shadow-sm"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp Valuation
+              </a>
+            </div>
           </div>
 
           {error && (
@@ -277,12 +209,12 @@ export default function ValuationForm() {
           <section className="bg-zinc-50 border border-zinc-100 p-6 sm:p-8 space-y-6 shadow-sm rounded-sm">
             <h2 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase border-b border-zinc-200 pb-2 flex items-center gap-2 font-bold">
               <span className="w-1.5 h-1.5 bg-[#C5A880] rounded-full"></span>
-              1. Customer Information
+              1. Your Details
             </h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Full Legal Name *</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Full Name *</label>
                 <input 
                   type="text" 
                   name="name" 
@@ -315,7 +247,7 @@ export default function ValuationForm() {
                   required
                   value={formData.phone}
                   onChange={handleTextChange}
-                  placeholder="e.g. +44 7123 456789" 
+                  placeholder="e.g. 07649 478871" 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-800 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 select-none text-sm"
                 />
               </div>
@@ -335,11 +267,10 @@ export default function ValuationForm() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Your Location / City *</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Your Location / City</label>
                 <input 
                   type="text" 
                   name="location" 
-                  required
                   value={formData.location}
                   onChange={handleTextChange}
                   placeholder="e.g. Sheffield, UK" 
@@ -353,7 +284,7 @@ export default function ValuationForm() {
           <section className="bg-zinc-50 border border-zinc-100 p-6 sm:p-8 space-y-6 shadow-sm rounded-sm">
             <h2 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase border-b border-zinc-200 pb-2 flex items-center gap-2 font-bold">
               <span className="w-1.5 h-1.5 bg-[#C5A880] rounded-full"></span>
-              2. Horology Specifications
+              2. Watch Details
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -366,22 +297,21 @@ export default function ValuationForm() {
                   onChange={handleTextChange}
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-850 focus:outline-none focus:border-[#C5A880] transition-all text-sm"
                 >
-                  <option value="">-- Click to select Brand --</option>
-                  {valuationBrands.map((brand) => (
-                    <option key={brand} value={brand}>{brand}</option>
+                  <option value="">-- Select brand --</option>
+                  {VALUATION_BRANDS.map((brandName) => (
+                    <option key={brandName} value={brandName}>{brandName}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Model Name / Description *</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Model / Description</label>
                 <input 
                   type="text" 
                   name="model" 
-                  required
                   value={formData.model}
                   onChange={handleTextChange}
-                  placeholder="e.g. Submariner Starbuck Green bezel" 
+                  placeholder="e.g. Submariner, Seamaster, PRX, Seiko 5 or unsure" 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-805 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 select-none text-sm"
                 />
               </div>
@@ -411,19 +341,22 @@ export default function ValuationForm() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Current Physical Condition</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Current Condition</label>
                 <select 
                   name="condition"
                   value={formData.condition}
                   onChange={handleTextChange}
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-850 focus:outline-none focus:border-[#C5A880] transition-all text-sm"
                 >
-                  <option value="Unworn">Unworn (Factory stickers/mint)</option>
-                  <option value="Mint">Mint (Like-new blemishes)</option>
-                  <option value="Excellent">Excellent (Minor swirls, razor sharp)</option>
-                  <option value="Very Good">Very Good (Light cosmetic wear only)</option>
-                  <option value="Good">Good (Moderate daily wear signs)</option>
-                  <option value="Fair">Fair (Scratching/signs of heavy use)</option>
+                  <option value="Working">Working</option>
+                  <option value="Non-running">Non-running</option>
+                  <option value="Broken / damaged">Broken / damaged</option>
+                  <option value="Needs repair">Needs repair</option>
+                  <option value="Unworn">Unworn / like new</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Fair">Fair / heavy wear</option>
+                  <option value="Unsure">Unsure</option>
                 </select>
               </div>
 
@@ -470,13 +403,13 @@ export default function ValuationForm() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Documented Service History</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Service History / Known Faults</label>
                 <input 
                   type="text" 
                   name="serviceHistory" 
                   value={formData.serviceHistory}
                   onChange={handleTextChange}
-                  placeholder="e.g. Serviced by Rolex in March 2023 with service paper card" 
+                  placeholder="e.g. recently serviced, not ticking, cracked glass, needs battery, unknown" 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-805 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 select-none text-sm"
                 />
               </div>
@@ -509,13 +442,13 @@ export default function ValuationForm() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Additional Details, Engravings or Chronology notes</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">Additional Details</label>
                 <textarea 
                   name="additionalDetails" 
                   rows={4}
                   value={formData.additionalDetails}
                   onChange={handleTextChange}
-                  placeholder="Describe bezel conditions, clasp swirls, missing bracelet links, dial details..." 
+                  placeholder="Tell us anything useful: faults, damage, missing links, box/papers, why you are selling, or if you are unsure." 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-3 text-xs text-zinc-805 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 resize-none text-sm"
                 ></textarea>
               </div>
@@ -526,10 +459,10 @@ export default function ValuationForm() {
           <section className="bg-zinc-50 border border-zinc-100 p-6 sm:p-8 space-y-6 shadow-sm rounded-sm">
             <h2 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase border-b border-zinc-200 pb-2 flex items-center gap-2 font-bold">
               <span className="w-1.5 h-1.5 bg-[#C5A880] rounded-full"></span>
-              3. Visual Verification Assets
+              3. Watch Photos
             </h2>
             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-xl font-mono">
-              High quality assets allow fast, precise valuations. Please drag-and-drop or select up to 5 photos. (Max size 8MB each).
+              Clear photos help us value your watch faster. Upload the front, back, side/crown and any box or papers if you have them. Max 8MB per photo.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -609,7 +542,7 @@ export default function ValuationForm() {
           <div className="flex gap-3 p-4 bg-[#FAF7F2] border border-[#EADBBD] rounded-sm shadow-xs">
             <ShieldAlert className="w-5 h-5 text-[#A07B43] shrink-0 mt-0.5" />
             <p className="text-[11px] text-[#A07B43] leading-relaxed font-mono uppercase font-semibold">
-              <strong>OFFICIAL APPRAISAL DISCLAIMER:</strong> Valuations are indicative only and subject to inspection, authentication, market conditions, and final agreement. Physical elements will be chemical analyzed and referenced against global lost-and-stolen registers before transaction closure.
+              <strong>VALUATION DISCLAIMER:</strong> Any valuation is indicative only and subject to inspection, authentication, market conditions, proof of ownership and final agreement. For security, we may request ID or ownership evidence before completing a purchase.
             </p>
           </div>
 
@@ -619,7 +552,7 @@ export default function ValuationForm() {
               disabled={loading}
               className="bg-[#C5A880] hover:bg-[#D5B890] disabled:bg-[#342D23] disabled:text-zinc-500 text-black font-semibold text-xs uppercase tracking-widest px-10 py-4 rounded-sm transition-colors duration-300 w-full sm:w-auto shadow-md font-sans text-xs cursor-pointer font-bold"
             >
-              {loading ? 'PROCESSING SECURE UPLOAD & PACKAGING...' : 'SUBMIT APPRAISAL REQUEST'}
+              {loading ? 'SUBMITTING REQUEST...' : 'GET FREE VALUATION'}
             </button>
           </div>
 
@@ -632,22 +565,22 @@ export default function ValuationForm() {
           </div>
 
           <div className="space-y-2">
-            <h2 className="font-serif text-2xl text-[#C09B65] uppercase tracking-wider font-bold">INTAKE COMPLETED</h2>
-            <p className="text-zinc-500 text-[11px] font-mono">APPRAISAL PIPELINE REFERENCE VERIFIED</p>
+            <h2 className="font-serif text-2xl text-[#C09B65] uppercase tracking-wider font-bold">VALUATION REQUEST RECEIVED</h2>
+            <p className="text-zinc-500 text-[11px] font-mono">We will review your watch details shortly</p>
           </div>
 
           <p className="text-xs sm:text-sm text-zinc-650 leading-relaxed font-sans max-w-md mx-auto">
-            Thank you. Your valuation request has been received. A member of Aleksander Hatton will review your submission and contact you shortly.
+            Thank you. Your valuation request has been received. Aleksander Hatton will review your watch details and contact you shortly by your preferred channel.
           </p>
 
           <div className="p-4 bg-white rounded-sm text-left border border-zinc-200 shadow-xs space-y-2 text-xs">
             <div className="flex gap-2 text-[10px] uppercase font-mono tracking-wider text-emerald-600 mt-2 font-bold">
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>Automated notifications synchronized</span>
+              <span>Request received successfully</span>
             </div>
             <p className="text-[10px] text-zinc-500 font-mono leading-relaxed mt-2 uppercase font-semibold">
-              • Direct email containing high-res horology snapshots sent to our Shefield appraisals team: <strong>inquiries@ahwatches.com</strong>.<br />
-              • Auto-conf email dispatched to your personal details.
+              • Direct email containing your watch details sent to our Sheffield valuation team: <strong>inquiries@ahwatches.com</strong>.<br />
+              • A confirmation email has been sent to your personal details.
             </p>
           </div>
 
@@ -664,7 +597,7 @@ export default function ValuationForm() {
                 model: '',
                 reference: '',
                 year: '',
-                condition: 'Excellent',
+                condition: 'Working',
                 box: 'Unsure',
                 papers: 'Unsure',
                 receipt: 'Unsure',
@@ -683,7 +616,7 @@ export default function ValuationForm() {
             }}
             className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-805 text-xs font-semibold uppercase tracking-widest px-8 py-3.5 rounded-sm transition-all shadow-xs font-bold cursor-pointer"
           >
-            Submit Another Appraisal
+            Submit Another Valuation
           </button>
         </div>
       )}
