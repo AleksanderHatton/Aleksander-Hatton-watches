@@ -17,9 +17,25 @@ import WatchDetail from './components/WatchDetail';
 import { Watch } from './types';
 import { apiFetch } from './lib/api';
 import { getCurrentUserProfile, supabase } from './lib/supabase';
+import { SHOP_BRANDS } from './lib/brands';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL, pathFromView, viewFromPath } from './lib/contact';
 
 export default function App() {
-  const [currentView, setView] = useState<string>('home');
+  const [currentView, setCurrentView] = useState<string>(() => viewFromPath(window.location.pathname));
+
+  const setView = (view: string) => {
+    setCurrentView(view);
+    const nextPath = pathFromView(view);
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath);
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => setCurrentView(viewFromPath(window.location.pathname));
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [selectedWatch, setSelectedWatch] = useState<Watch | null>(null);
   const [stock, setStock] = useState<Watch[]>([]);
   const [selectedBrandFilter, setSelectedBrandFilter] = useState<string>('All');
@@ -89,24 +105,7 @@ export default function App() {
   const [contactSending, setContactSending] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
 
-  const brandCategories = [
-    'Rolex',
-    'Omega',
-    'Cartier',
-    'Tudor',
-    'IWC',
-    'Breitling',
-    'TAG Heuer',
-    'Hublot',
-    'Grand Seiko',
-    'Tissot',
-    'Hamilton',
-    'Longines',
-    'Seiko',
-    'Citizen',
-    'Orient',
-    'Timex'
-  ];
+  const brandCategories = SHOP_BRANDS;
 
   // Load stock immediately
   const fetchStock = async () => {
@@ -274,7 +273,7 @@ export default function App() {
                     >
                       <div className="w-6 h-[1px] bg-[#C5A880]/50"></div>
                       <span className="text-[10px] sm:text-xs font-mono tracking-widest uppercase text-zinc-500">
-                        High horology brokerage
+                        Independent watch dealer
                       </span>
                       <div className="w-6 h-[1px] bg-[#C5A880]/50"></div>
                     </motion.div>
@@ -285,7 +284,7 @@ export default function App() {
                       transition={{ duration: 0.6, delay: 0.3 }}
                       className="font-serif text-lg sm:text-xl text-zinc-800 italic max-w-2xl mx-auto tracking-wide mt-2"
                     >
-                      Luxury watches. Sourced, sold, and valued with discretion.
+                      Buy, sell, value and source watches across all price ranges.
                     </motion.p>
                   </div>
 
@@ -326,9 +325,9 @@ export default function App() {
                     <div className="w-10 h-10 border border-[#C5A880]/30 rounded flex items-center justify-center bg-zinc-50 text-[#C5A880] mx-auto sm:mx-0 shadow-sm">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
-                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">UTMOST DISCRETION</h3>
+                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">ALL WATCHES CONSIDERED</h3>
                     <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                      All appraisals, negotiations, and shipping escrows are managed in-house. We protect transactions under complete dealer confidentiality.
+                      We welcome valuation requests for working, broken, damaged and non-running watches across both premium and everyday brands.
                     </p>
                   </div>
 
@@ -336,9 +335,9 @@ export default function App() {
                     <div className="w-10 h-10 border border-[#C5A880]/30 rounded flex items-center justify-center bg-zinc-50 text-[#C5A880] mx-auto sm:mx-0 shadow-sm">
                       <Compass className="w-5 h-5" />
                     </div>
-                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">MARKET INFLUENCE</h3>
+                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">LOCAL VALUATION DESK</h3>
                     <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                      Our Sheffield acquisitions desk works seamlessly across key European trading networks to lock in competitive pricing.
+                      Submit your details and photos online, then arrange a private appointment or home visit by booking where appropriate.
                     </p>
                   </div>
 
@@ -346,9 +345,9 @@ export default function App() {
                     <div className="w-10 h-10 border border-[#C5A880]/30 rounded flex items-center justify-center bg-zinc-50 text-[#C5A880] mx-auto sm:mx-0 shadow-sm">
                       <Award className="w-5 h-5" />
                     </div>
-                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">TRUST &amp; CERTIFICATION</h3>
+                    <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold">TRUST &amp; AUTHENTICATION</h3>
                     <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                      Every piece undergoes physical testing, calibre examination, and reference checks against lost and stolen registers before catalog upload.
+                      Offers are subject to inspection, ownership checks and authentication so genuine sellers and buyers are protected.
                     </p>
                   </div>
                 </div>
@@ -357,12 +356,12 @@ export default function App() {
               {/* BRAND EXPLORATION CARDS (Section 1: "Brand browsing section") */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                 <div className="text-center space-y-2">
-                  <h2 className="font-serif text-xl sm:text-2xl tracking-widest text-zinc-900 uppercase font-semibold font-bold">PREMIUM BRAND DIRECTORIES</h2>
-                  <p className="text-[10px] text-[#C5A880] font-mono tracking-widest uppercase">FILTER AND EXPLORE KNOWN HOUSES</p>
+                  <h2 className="font-serif text-xl sm:text-2xl tracking-widest text-zinc-900 uppercase font-semibold font-bold">WATCH BRAND DIRECTORIES</h2>
+                  <p className="text-[10px] text-[#C5A880] font-mono tracking-widest uppercase">BROWSE CURRENT STOCK AND COMMONLY REQUESTED BRANDS</p>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-4">
-                  {brandCategories.map((brandName) => {
+                  {brandCategories.slice(0, 12).map((brandName) => {
                     const isSoldOut = checkBrandSoldOut(brandName);
                     return (
                       <div 
@@ -461,48 +460,48 @@ export default function App() {
                   
                   <div className="space-y-6">
                     <div>
-                      <span className="text-[10px] font-mono tracking-widest text-[#C5A880] uppercase font-bold">Sheffield-Based Fine Horology</span>
+                      <span className="text-[10px] font-mono tracking-widest text-[#C5A880] uppercase font-bold">Sheffield-Based Watch Dealer</span>
                       <h2 className="font-serif text-2xl sm:text-3xl text-zinc-900 tracking-widest uppercase mt-1 font-bold">ABOUT ALEKSANDER HATTON</h2>
                       <div className="w-12 h-[1px] bg-[#C5A880] mt-3"></div>
                     </div>
                     
                     <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed font-sans">
-                      Aleksander Hatton is a Sheffield-based luxury watch dealership established in 2025. The business was created to help clients buy, sell, value, and source premium timepieces with a focus on trust, discretion, and market knowledge. 
+                      Aleksander Hatton is a Sheffield-based watch dealership established in 2025. The business helps clients buy, sell, value, and source watches across a wide range of brands and price points, from everyday watches to high-end pieces. 
                     </p>
                     <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed font-sans">
-                      From its base in Sheffield, Aleksander Hatton combines a client-first approach with access to a wider network of watch dealers, wholesalers, and collectors. Whether a client is looking to purchase, sell, value, or source a specific watch, the business aims to provide a professional and personal service.
+                      From its base in Sheffield, Aleksander Hatton combines a client-first approach with access to a wider network of watch dealers, wholesalers, and collectors. We consider working, broken, damaged and non-running watches, with private viewings and home appointments available by booking.
                     </p>
                   </div>
 
                   {/* Operational team detail card */}
                   <div className="bg-white border border-zinc-200/60 p-6 lg:p-8 space-y-6 rounded-sm shadow-md">
                     <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase font-bold border-b border-zinc-100 pb-2">
-                       Operational Leadership
+                       How We Help
                      </h3>
 
                     <div className="space-y-4 text-xs font-sans">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Leo Hatton</h4>
-                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">CEO &amp; Founder</p>
+                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Sell / Value</h4>
+                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Free watch valuation requests</p>
                         </div>
                         <span className="text-[10px] font-mono text-[#C5A880] bg-[#FAF6F0] px-2 py-0.5 rounded border border-[#C5A880]/30">Sheffield HQ</span>
                       </div>
 
                       <div className="flex justify-between items-start border-t border-zinc-100 pt-4">
                         <div>
-                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Claire Montgomery</h4>
-                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Chief Financial Officer (CFO)</p>
+                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Buy</h4>
+                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Curated watches for sale</p>
                         </div>
-                        <span className="text-[10px] font-mono text-zinc-500">Asset Settlement</span>
+                        <span className="text-[10px] font-mono text-zinc-500">Private Sales</span>
                       </div>
 
                       <div className="flex justify-between items-start border-t border-zinc-100 pt-4">
                         <div>
-                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Marcus Vance</h4>
-                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Master Horologist</p>
+                          <h4 className="text-zinc-900 font-bold tracking-wide uppercase">Source</h4>
+                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Specific watch sourcing</p>
                         </div>
-                        <span className="text-[10px] font-mono text-zinc-500">Authentication Desk</span>
+                        <span className="text-[10px] font-mono text-zinc-500">Supplier Network</span>
                       </div>
                     </div>
                   </div>
@@ -513,14 +512,14 @@ export default function App() {
               {/* REVIEVED FEEDBACK / MAP (Coordinates section) */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
                 <div className="bg-zinc-50 border border-zinc-100 p-8 flex flex-col justify-center space-y-4 shadow-xs">
-                  <h3 className="font-serif text-lg text-zinc-900 uppercase tracking-wider font-bold">SHEFFIELD CONCIERGE</h3>
+                  <h3 className="font-serif text-lg text-zinc-900 uppercase tracking-wider font-bold">SHEFFIELD WATCH APPOINTMENTS</h3>
                   <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                    We invite private collectors and sellers to coordinate viewing coordinates in Sheffield. Local appraisals are strictly scheduled by appointment with security escort on hand.
+                    Private viewings and valuation appointments are available by booking. We can also discuss suitable home appointments for sellers and buyers where appropriate.
                   </p>
                   <div className="text-xs font-mono text-[#C5A880] space-y-1.5 uppercase font-semibold">
                     <p className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Sheffield, South Yorkshire, UK</p>
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> Phone line temporarily unavailable — landline being updated</p>
-                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> inquiries@ahwatches.com</p>
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> <a href={CONTACT_PHONE_TEL} className="hover:underline">{CONTACT_PHONE_DISPLAY}</a></p>
+                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> <a href={`mailto:${CONTACT_EMAIL}`} className="hover:underline">{CONTACT_EMAIL}</a></p>
                   </div>
                 </div>
 
@@ -529,9 +528,9 @@ export default function App() {
                   <div className="absolute inset-0 bg-cover bg-center blend-overlay opacity-30 filter grayscale contrast-125" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800")' }}></div>
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 to-zinc-900/10"></div>
                   <div className="absolute bottom-6 left-6 z-10 space-y-1 text-xs">
-                    <span className="text-[10px] text-[#C5A880] font-mono uppercase tracking-widest font-bold">Sheffield Headquarters</span>
-                    <h4 className="font-serif text-sm text-white font-bold tracking-wide uppercase">By Appointment Office Vaults</h4>
-                    <p className="text-[10.5px] text-zinc-200 leading-normal">Secured horlogist verification bays.</p>
+                    <span className="text-[10px] text-[#C5A880] font-mono uppercase tracking-widest font-bold">Sheffield Appointments</span>
+                    <h4 className="font-serif text-sm text-white font-bold tracking-wide uppercase">Private Viewings By Booking</h4>
+                    <p className="text-[10.5px] text-zinc-200 leading-normal">Valuations, buying appointments and sourcing meetings.</p>
                   </div>
                 </div>
               </section>
@@ -548,14 +547,14 @@ export default function App() {
               className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10"
             >
               <div className="text-center max-w-xl mx-auto space-y-3">
-                <h1 className="font-serif text-3xl tracking-widest text-zinc-900 uppercase font-bold">SHOWROOM STOCK</h1>
-                <p className="text-xs text-[#C5A880] font-mono tracking-widest uppercase">Verified Luxury Horological Inventory</p>
+                <h1 className="font-serif text-3xl tracking-widest text-zinc-900 uppercase font-bold">WATCHES FOR SALE</h1>
+                <p className="text-xs text-[#C5A880] font-mono tracking-widest uppercase">Curated pre-owned watches across selected price ranges</p>
                 <div className="w-12 h-[1px] bg-[#C5A880] mx-auto"></div>
               </div>
 
               {/* Brand filtration lists */}
               <div className="space-y-4">
-                <span className="block text-[10px] tracking-widest font-mono text-zinc-400 uppercase font-bold text-center">FILTER BY KNOWN BRANDS</span>
+                <span className="block text-[10px] tracking-widest font-mono text-zinc-400 uppercase font-bold text-center">FILTER BY BRAND</span>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <button
                     onClick={() => setSelectedBrandFilter('All')}
@@ -627,7 +626,7 @@ export default function App() {
 
                         <div>
                           <div className="flex items-baseline justify-between pt-1 border-t border-zinc-200/60 mb-3">
-                            <span className="text-[10px] text-zinc-500 font-mono uppercase">Fine Price</span>
+                            <span className="text-[10px] text-zinc-500 font-mono uppercase">Price</span>
                             <span className="font-serif text-base text-[#C5A880] font-bold">£{watch.price.toLocaleString()}</span>
                           </div>
                           
@@ -712,9 +711,26 @@ export default function App() {
               className="max-w-5xl mx-auto px-4 py-12 space-y-12"
             >
               <div className="text-center max-w-xl mx-auto space-y-3">
-                <h1 className="font-serif text-3xl tracking-widest text-zinc-900 uppercase font-bold">CONTACT COORDINATES</h1>
-                <p className="text-xs text-[#C5A880] font-mono tracking-widest uppercase">discreet communications desk</p>
+                <h1 className="font-serif text-3xl tracking-widest text-zinc-900 uppercase font-bold">CONTACT ALEKSANDER HATTON</h1>
+                <p className="text-xs text-[#C5A880] font-mono tracking-widest uppercase">Call, WhatsApp or send an enquiry</p>
                 <div className="w-12 h-[1px] bg-[#C5A880] mx-auto"></div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                <a
+                  href={CONTACT_PHONE_TEL}
+                  className="bg-[#C5A880] hover:bg-[#D5B890] text-black text-xs font-bold uppercase tracking-widest px-5 py-3 rounded-sm text-center shadow-sm"
+                >
+                  Call {CONTACT_PHONE_DISPLAY}
+                </a>
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-bold uppercase tracking-widest px-5 py-3 rounded-sm text-center shadow-sm"
+                >
+                  WhatsApp Us
+                </a>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -722,7 +738,7 @@ export default function App() {
                 {/* Contact form cards */}
                 <div className="bg-zinc-50 border border-zinc-100 p-6 sm:p-8 space-y-6 shadow-sm">
                   <h3 className="font-serif text-sm tracking-widest text-[#C5A880] uppercase border-b border-zinc-200 pb-2 font-bold">
-                    Submit Enquiry Letter
+                    Send an Enquiry
                   </h3>
 
                   {!contactSuccess ? (
@@ -757,7 +773,7 @@ export default function App() {
                             type="tel" 
                             value={contactForm.phone}
                             onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                            placeholder="e.g. +44 7123" 
+                            placeholder="e.g. 07649 478871" 
                             className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-zinc-800 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/35 transition-all text-sm"
                           />
                         </div>
@@ -780,7 +796,7 @@ export default function App() {
                         disabled={contactSending}
                         className="bg-[#C5A880] hover:bg-[#D5B890] text-black font-semibold text-xs uppercase tracking-widest py-3 w-full shadow-md cursor-pointer transition-colors"
                       >
-                        {contactSending ? 'TRANSMITTING MESSAGE...' : 'DISPATCH MESSAGE SECURITY ENVELOPE'}
+                        {contactSending ? 'SENDING MESSAGE...' : 'SEND MESSAGE'}
                       </button>
                     </form>
                   ) : (
@@ -805,7 +821,7 @@ export default function App() {
                   <div className="bg-zinc-50 border border-zinc-100 p-6 lg:p-8 space-y-4 shadow-sm">
                     <h3 className="font-serif text-[#C5A880] tracking-widest text-xs uppercase font-bold flex items-center gap-2">
                       <Compass className="w-4 h-4" />
-                      Sheffield Office coordinates
+                      Sheffield Watch Desk
                     </h3>
                     
                     <div className="space-y-4 text-xs text-zinc-700">
@@ -815,11 +831,11 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-3">
                         <Phone className="w-4 h-4 text-[#C5A880]" />
-                        <span className="font-medium text-zinc-700">Phone line temporarily unavailable — landline being updated</span>
+                        <a href={CONTACT_PHONE_TEL} className="font-semibold text-zinc-800 hover:text-[#C5A880] hover:underline">{CONTACT_PHONE_DISPLAY}</a>
                       </div>
                       <div className="flex items-center gap-3">
                         <Mail className="w-4 h-4 text-[#C5A880]" />
-                        <a href="mailto:inquiries@ahwatches.com" className="hover:text-black hover:underline transition-colors font-medium">inquiries@ahwatches.com</a>
+                        <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-black hover:underline transition-colors font-medium">{CONTACT_EMAIL}</a>
                       </div>
                     </div>
                   </div>
@@ -827,7 +843,7 @@ export default function App() {
                   <div className="border border-zinc-150 p-6 bg-zinc-50 text-center space-y-3 shadow-xs">
                     <span className="text-[10px] font-mono tracking-widest text-[#C5A880] uppercase font-bold">BY APPOINTMENT ASSURANCE</span>
                     <p className="text-xs text-zinc-650 leading-relaxed max-w-xs mx-auto">
-                      All physical visits are coordinated strictly inside secured facilities with professional horologists on site.
+                      Private viewings and home appointments are available by booking. For sellers, working, broken, damaged and non-running watches are welcome for valuation.
                     </p>
                   </div>
                 </div>
