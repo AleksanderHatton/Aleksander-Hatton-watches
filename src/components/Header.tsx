@@ -1,6 +1,7 @@
 import React from 'react';
-import { Menu, X, Shield, ShoppingBag, Eye, User, LogOut } from 'lucide-react';
+import { Menu, X, Shield, ShoppingBag, Eye, User, LogOut, Phone } from 'lucide-react';
 import { motion } from 'motion/react';
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL } from '../lib/contact';
 
 interface HeaderProps {
   currentView: string;
@@ -49,7 +50,7 @@ export default function Header({
               Aleksander Hatton
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[9px] font-mono tracking-widest text-[#9A8F80] uppercase">Fine Horology</span>
+              <span className="text-[9px] font-mono tracking-widest text-[#9A8F80] uppercase">Independent Dealer</span>
               <span className="w-1 h-1 rounded-full bg-[#C5A880]"></span>
               <span className="text-[9px] font-mono tracking-widest text-[#9A8F80] uppercase">Sheffield</span>
             </div>
@@ -79,6 +80,13 @@ export default function Header({
 
           {/* Right Header Controls (Unified login) */}
           <div className="hidden md:flex items-center space-x-6 pr-1">
+            <a
+              href={CONTACT_PHONE_TEL}
+              className="relative text-xs tracking-widest uppercase transition-all duration-300 py-2 font-bold cursor-pointer flex items-center gap-2 text-zinc-650 hover:text-[#C5A880]"
+            >
+              <Phone className="w-3.5 h-3.5 text-[#C5A880]" />
+              {CONTACT_PHONE_DISPLAY}
+            </a>
             {session === null ? (
               <button
                 onClick={onOpenAuth}
@@ -144,6 +152,13 @@ export default function Header({
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-4">
+            <a
+              href={CONTACT_PHONE_TEL}
+              className="p-2 text-[#C5A880] hover:text-zinc-900 transition-colors"
+              title={`Call ${CONTACT_PHONE_DISPLAY}`}
+            >
+              <Phone className="w-4.5 h-4.5" />
+            </a>
             {session !== null && (
               <button
                 onClick={() => handleNavClick(session.role === 'dealer' ? 'admin' : 'account')}
