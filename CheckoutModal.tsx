@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Ship, ShoppingBag, Eye, ShieldCheck, CheckCircle } from 'lucide-react';
 import { Watch } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -25,6 +25,16 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successInfo, setSuccessInfo] = useState<any>(null);
+
+  // Lock the page behind the modal so touch scrolling moves the modal, not the page.
+  useEffect(() => {
+    if (!isOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [isOpen]);
 
   if (!isOpen || !watch) return null;
 
@@ -74,7 +84,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div className="relative w-full max-w-4xl bg-white border border-zinc-250 rounded-sm shadow-2xl flex flex-col md:flex-row my-4 md:my-0 md:max-h-[90dvh] md:overflow-hidden">
         
         {/* Left Side: Product Breakdown Summary & Branding (Fixed, no scroll or scrollable inside) */}

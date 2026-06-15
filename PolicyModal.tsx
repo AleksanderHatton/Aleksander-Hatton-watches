@@ -16,6 +16,16 @@ export default function PolicyModal({ isOpen, onClose, initialTab }: PolicyModal
     }
   }, [initialTab]);
 
+  // Lock the page behind the modal so touch scrolling moves the modal, not the page.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const tabs = [
@@ -115,7 +125,7 @@ export default function PolicyModal({ isOpen, onClose, initialTab }: PolicyModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div className="relative w-full max-w-4xl bg-white border border-zinc-250 rounded-sm shadow-2xl flex flex-col md:flex-row my-4 md:my-0 md:max-h-[85dvh] md:overflow-hidden">
         
         {/* Left Hand Navigation Sidebar (Policies list) */}
