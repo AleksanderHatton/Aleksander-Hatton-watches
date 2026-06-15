@@ -11,10 +11,10 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-const MAX_STOCK_IMAGES = 12;
+const MAX_STOCK_IMAGES = 8;
 const MAX_STOCK_UPLOAD_MB = 8;
-const STOCK_IMAGE_MAX_DIMENSION = 2000;
-const STOCK_IMAGE_QUALITY = 0.92;
+const STOCK_IMAGE_MAX_DIMENSION = 1200;
+const STOCK_IMAGE_QUALITY = 0.82;
 
 const compressImageToDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
