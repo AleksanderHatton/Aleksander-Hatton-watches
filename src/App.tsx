@@ -19,6 +19,7 @@ import { apiFetch } from './lib/api';
 import { getCurrentUserProfile, supabase } from './lib/supabase';
 import { SHOP_BRANDS } from './lib/brands';
 import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL, pathFromView, viewFromPath } from './lib/contact';
+import { getWatchCoverImage } from './lib/images';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<string>(() => viewFromPath(window.location.pathname));
@@ -416,11 +417,11 @@ export default function App() {
                       title={`View full details for ${watch.brand} ${watch.model}`}
                       className="bg-zinc-50 rounded-sm overflow-hidden border border-zinc-100 hover:border-[#C5A880] transition-all duration-300 flex flex-col group shadow-xs cursor-pointer hover:shadow-md hover:-translate-y-0.5"
                     >
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-zinc-100 border-b border-zinc-100 relative">
+                      <div className="aspect-square w-full overflow-hidden bg-[#F3EFE6] border-b border-zinc-100 relative">
                         <img 
-                          src={watch.image} 
+                          src={getWatchCoverImage(watch)} 
                           alt={`${watch.brand} ${watch.model}`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-xs border border-[#C5A880]/30 px-2.5 py-1 text-[9px] text-[#C5A880] font-mono rounded-sm uppercase tracking-wider shadow-sm">
@@ -601,11 +602,11 @@ export default function App() {
                       className="bg-zinc-50 rounded-sm overflow-hidden border border-zinc-100 hover:border-[#C5A880] transition-all duration-350 flex flex-col justify-between group shadow-xs cursor-pointer hover:shadow-md hover:-translate-y-0.5 animate-fade-in"
                     >
                       
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-zinc-100 border-b border-zinc-100 relative">
+                      <div className="aspect-square w-full overflow-hidden bg-[#F3EFE6] border-b border-zinc-100 relative">
                         <img 
-                          src={watch.image} 
+                          src={getWatchCoverImage(watch)} 
                           alt={`${watch.brand} ${watch.model}`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-xs border border-[#C5A880]/30 px-2.5 py-1 text-[9px] text-[#C5A880] font-mono rounded-sm uppercase tracking-wider shadow-sm font-semibold">

@@ -64,6 +64,11 @@ export const handler = async (event: any) => {
 
     if (orderError) throw orderError;
 
+    const checkoutImage = [
+      ...(Array.isArray(watch.images) ? watch.images : []),
+      watch.image
+    ].find((image: any) => typeof image === 'string' && image.startsWith('http'));
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: orderPayload.client_email,
@@ -83,7 +88,7 @@ export const handler = async (event: any) => {
             product_data: {
               name: `${watch.brand} ${watch.model}`,
               description: watch.reference ? `Reference: ${watch.reference}` : undefined,
-              images: watch.image?.startsWith('http') ? [watch.image] : undefined,
+              images: checkoutImage ? [checkoutImage] : undefined,
             },
           },
         },

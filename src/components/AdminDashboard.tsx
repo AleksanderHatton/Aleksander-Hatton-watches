@@ -5,10 +5,60 @@ import {
 } from 'lucide-react';
 import { Watch, ValuationRequest, SourcingRequest, Order, ContactSubmission } from '../types';
 import { apiFetch } from '../lib/api';
+import { FALLBACK_WATCH_IMAGE, getWatchCoverImage } from '../lib/images';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
+
+const MAX_STOCK_IMAGES = 12;
+const MAX_STOCK_UPLOAD_MB = 8;
+const STOCK_IMAGE_MAX_DIMENSION = 2000;
+const STOCK_IMAGE_QUALITY = 0.92;
+
+const compressImageToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const source = reader.result as string;
+      const image = new Image();
+
+      image.onload = () => {
+        const longestSide = Math.max(image.width, image.height);
+        const scale = longestSide > STOCK_IMAGE_MAX_DIMENSION ? STOCK_IMAGE_MAX_DIMENSION / longestSide : 1;
+        const scaledWidth = Math.max(1, Math.round(image.width * scale));
+        const scaledHeight = Math.max(1, Math.round(image.height * scale));
+        const squareSize = Math.max(scaledWidth, scaledHeight);
+        const canvas = document.createElement('canvas');
+        canvas.width = squareSize;
+        canvas.height = squareSize;
+
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error('Image compression failed.'));
+          return;
+        }
+
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.fillStyle = '#F3EFE6';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        const offsetX = Math.round((squareSize - scaledWidth) / 2);
+        const offsetY = Math.round((squareSize - scaledHeight) / 2);
+        context.drawImage(image, offsetX, offsetY, scaledWidth, scaledHeight);
+        resolve(canvas.toDataURL('image/jpeg', STOCK_IMAGE_QUALITY));
+      };
+
+      image.onerror = () => reject(new Error('Image file could not be read.'));
+      image.src = source;
+    };
+
+    reader.onerror = () => reject(new Error('Error parsing watch photo files.'));
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [stock, setStock] = useState<Watch[]>([]);
@@ -47,6 +97,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     papers: 'Yes' as 'Yes' | 'No' | 'Unsure',
     price: '',
     image: '',
+    images: [] as string[],
     status: 'Available' as 'Available' | 'Reserved' | 'Sold',
     description: '',
     stripeLink: ''
@@ -108,28 +159,111 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     });
   };
 
-  const processUploadedFile = (file: File) => {
+  const processUploadedFiles = async (fileList: FileList | File[]) => {
     setErrorStock('');
-    if (!file.type.startsWith('image/')) {
-      setErrorStock('Only image files (JPEG, PNG, WEBP, GIF) are permitted.');
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setErrorStock('Image file size must be less than 8MB.');
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    const remainingSlots = MAX_STOCK_IMAGES - stockForm.images.length;
+    if (remainingSlots <= 0) {
+      setErrorStock(`Maximum ${MAX_STOCK_IMAGES} photos per watch listing.`);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setStockForm(prev => ({
+    const selectedFiles = files.slice(0, remainingSlots);
+    const rejectedForLimit = files.length > selectedFiles.length;
+
+    for (const file of selectedFiles) {
+      if (!file.type.startsWith('image/')) {
+        setErrorStock('Only image files (JPEG, PNG, WEBP, GIF) are permitted.');
+        return;
+      }
+      if (file.size > MAX_STOCK_UPLOAD_MB * 1024 * 1024) {
+        setErrorStock(`Each image file must be less than ${MAX_STOCK_UPLOAD_MB}MB before compression.`);
+        return;
+      }
+    }
+
+    try {
+      const uploadedImages = await Promise.all(selectedFiles.map(compressImageToDataUrl));
+      setStockForm(prev => {
+        const images = [...prev.images, ...uploadedImages].slice(0, MAX_STOCK_IMAGES);
+        return {
+          ...prev,
+          images,
+          image: prev.image || images[0] || ''
+        };
+      });
+
+      if (rejectedForLimit) {
+        setErrorStock(`Only ${remainingSlots} more photo${remainingSlots === 1 ? '' : 's'} added. Maximum is ${MAX_STOCK_IMAGES}.`);
+      }
+    } catch (err: any) {
+      setErrorStock(err.message || 'Error parsing watch photo files.');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeStockImage = (indexToRemove: number) => {
+    setStockForm(prev => {
+      const images = prev.images.filter((_, index) => index !== indexToRemove);
+      return {
         ...prev,
-        image: reader.result as string
-      }));
-    };
-    reader.onerror = () => {
-      setErrorStock('Error parsing watch photo files.');
-    };
-    reader.readAsDataURL(file);
+        images,
+        image: images[0] || ''
+      };
+    });
+  };
+
+  const setCoverImage = (indexToPromote: number) => {
+    setStockForm(prev => {
+      const selectedImage = prev.images[indexToPromote];
+      if (!selectedImage) return prev;
+
+      const images = [
+        selectedImage,
+        ...prev.images.filter((_, index) => index !== indexToPromote)
+      ];
+
+      return {
+        ...prev,
+        images,
+        image: selectedImage
+      };
+    });
+  };
+
+  const addImageUrlToGallery = (url: string) => {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+
+    setStockForm(prev => {
+      const images = [
+        trimmedUrl,
+        ...prev.images.filter(image => image !== trimmedUrl)
+      ].slice(0, MAX_STOCK_IMAGES);
+
+      return {
+        ...prev,
+        images,
+        image: trimmedUrl
+      };
+    });
+  };
+
+  const handlePrimaryImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStockForm(prev => {
+      const remainingImages = prev.images.slice(1).filter(image => image !== value);
+      const images = value ? [value, ...remainingImages].slice(0, MAX_STOCK_IMAGES) : remainingImages;
+
+      return {
+        ...prev,
+        image: value,
+        images
+      };
+    });
   };
 
   const handleDrag = (e: React.DragEvent, active: boolean) => {
@@ -143,15 +277,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     e.stopPropagation();
     setDragActive(false);
     const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      processUploadedFile(files[0]);
+    if (files && files.length > 0) {
+      processUploadedFiles(files);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files[0]) {
-      processUploadedFile(files[0]);
+    if (files && files.length > 0) {
+      processUploadedFiles(files);
     }
   };
 
@@ -170,12 +304,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
-    const imageToSubmit = stockForm.image || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800';
+    const imagesToSubmit = stockForm.images.length > 0
+      ? stockForm.images
+      : [stockForm.image || FALLBACK_WATCH_IMAGE];
 
     const payload = {
       ...stockForm,
       price: priceNum,
-      image: imageToSubmit
+      image: imagesToSubmit[0],
+      images: imagesToSubmit
     };
 
     try {
@@ -207,7 +344,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       box: watch.box,
       papers: watch.papers,
       price: String(watch.price),
-      image: watch.image,
+      image: getWatchCoverImage(watch),
+      images: Array.isArray(watch.images) && watch.images.length > 0 ? watch.images : [watch.image].filter(Boolean),
       status: watch.status,
       description: watch.description,
       stripeLink: watch.stripeLink || ''
@@ -238,6 +376,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       papers: 'Yes',
       price: '',
       image: '',
+      images: [],
       status: 'Available',
       description: '',
       stripeLink: ''
@@ -553,9 +692,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Watch photo / Cover image *</label>
+                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Watch photos / gallery *</label>
+                  <p className="text-[9px] text-zinc-500 mb-2">Upload up to {MAX_STOCK_IMAGES} angles. The first photo is used as the cover image across the shop, checkout and product page. Images are auto-cleaned, padded to a square frame and exported at high quality for a sharper, more uniform gallery.</p>
                   
-                  {/* Photo Drag and Drop area from physical Computer Drive */}
+                  {/* Multi-photo drag and drop area from physical Computer Drive */}
                   <div 
                     onDragEnter={(e) => handleDrag(e, true)}
                     onDragOver={(e) => handleDrag(e, true)}
@@ -565,7 +705,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     className={`border border-dashed rounded-sm p-4 text-center cursor-pointer transition-all ${
                       dragActive 
                         ? 'border-[#C5A880] bg-[#C5A880]/5' 
-                        : 'border-zinc-200 hover:border-zinc-500 bg-white'
+                        : 'border-zinc-200 hover:border-zinc-500 bg-[#F7F3EC]'
                     }`}
                   >
                     <input 
@@ -573,38 +713,66 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       ref={fileInputRef}
                       className="hidden" 
                       accept="image/*"
+                      multiple
                       onChange={handleFileInputChange}
                     />
                     
-                    {stockForm.image ? (
-                      <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0">
-                          <img 
-                            src={stockForm.image} 
-                            alt="Preview" 
-                            className="w-full h-full object-cover" 
-                            referrerPolicy="no-referrer"
-                          />
-                        </div>
-                        <div className="text-left space-y-1 overflow-hidden">
+                    {stockForm.images.length > 0 ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-3 text-left">
                           <p className="text-[10px] font-mono text-emerald-700 font-bold uppercase flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Photo Loaded Successfully
-                          </p>
-                          <p className="text-[9px] text-zinc-700 truncate max-w-[150px]">
-                            {stockForm.image.startsWith('data:') ? 'Local file uploaded' : stockForm.image}
+                            {stockForm.images.length} photo{stockForm.images.length === 1 ? '' : 's'} loaded
                           </p>
                           <button 
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setStockForm(prev => ({ ...prev, image: '' }));
+                              setStockForm(prev => ({ ...prev, image: '', images: [] }));
                             }}
                             className="text-[9px] font-bold font-sans uppercase tracking-wider text-red-550 hover:text-red-700 transition-colors"
                           >
-                            Clear Photo
+                            Clear all
                           </button>
                         </div>
+
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {stockForm.images.map((photo, index) => (
+                            <div key={`${photo}-${index}`} className="group relative aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-[#EFE8DC]" onClick={(e) => e.stopPropagation()}>
+                              <img 
+                                src={photo} 
+                                alt={`Watch upload ${index + 1}`} 
+                                className="w-full h-full object-contain p-1.5" 
+                                referrerPolicy="no-referrer"
+                              />
+                              {index === 0 && (
+                                <span className="absolute top-1 left-1 bg-black/85 text-[#C5A880] border border-[#C5A880]/30 px-1.5 py-0.5 rounded text-[7.5px] font-mono uppercase font-bold">
+                                  Cover
+                                </span>
+                              )}
+                              <div className="absolute inset-x-1 bottom-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {index !== 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setCoverImage(index)}
+                                    className="flex-1 bg-white/95 border border-zinc-200 text-[7.5px] font-mono uppercase text-zinc-800 rounded px-1 py-0.5 font-bold"
+                                  >
+                                    Cover
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => removeStockImage(index)}
+                                  className="flex-1 bg-red-50/95 border border-red-200 text-[7.5px] font-mono uppercase text-red-700 rounded px-1 py-0.5 font-bold"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <p className="text-[9px] text-zinc-600 text-left">Click this box again to add more angles. Photos are resized automatically so the site loads faster.</p>
                       </div>
                     ) : (
                       <div className="space-y-1.5 py-1">
@@ -612,10 +780,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <Upload className="w-5 h-5" />
                         </div>
                         <p className="text-[10px] font-mono text-zinc-700 uppercase font-semibold">
-                          Drag &amp; drop timepiece photo
+                          Drag &amp; drop watch photos
                         </p>
                         <p className="text-[9px] text-zinc-700">
-                          or click to browse computer files (Max 8MB)
+                          or click to browse computer files. Upload front, dial, caseback, crown side, clasp, box and papers.
                         </p>
                       </div>
                     )}
@@ -623,26 +791,25 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                   {/* Fallback Manual Text Input */}
                   <div className="mt-3">
-                    <label className="block text-[9px] font-mono uppercase text-zinc-700 mb-1">Or provide alternative Image URL</label>
+                    <label className="block text-[9px] font-mono uppercase text-zinc-700 mb-1">Primary image URL / cover image</label>
                     <input 
                       type="text" 
-                      name="image" 
                       value={stockForm.image}
-                      onChange={handleStockInputChange}
+                      onChange={handlePrimaryImageUrlChange}
                       placeholder="https://example.com/watch-photo.jpg" 
                       className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 text-[11px] focus:outline-none focus:border-[#C5A880] focus:bg-white font-mono"
                     />
                     <div className="flex gap-2.5 mt-2 justify-end">
                       <button 
                         type="button" 
-                        onClick={() => setStockForm({ ...stockForm, image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=800' })}
+                        onClick={() => addImageUrlToGallery('https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=800')}
                         className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
                       >
                         Rolex Preset
                       </button>
                       <button 
                         type="button" 
-                        onClick={() => setStockForm({ ...stockForm, image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800' })}
+                        onClick={() => addImageUrlToGallery('https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800')}
                         className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
                       >
                         Patek Preset
@@ -711,7 +878,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 bg-zinc-50 rounded border border-zinc-200 overflow-hidden shrink-0">
                         <img 
-                          src={watch.image} 
+                          src={getWatchCoverImage(watch)} 
                           alt={watch.model} 
                           className="w-full h-full object-cover" 
                           referrerPolicy="no-referrer"

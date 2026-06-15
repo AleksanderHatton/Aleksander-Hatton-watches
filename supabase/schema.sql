@@ -23,6 +23,7 @@ create table if not exists public.watches (
   papers text default 'Unsure' check (papers in ('Yes', 'No', 'Unsure')),
   price integer not null check (price > 0),
   image text,
+  images jsonb not null default '[]'::jsonb,
   status text not null default 'Available' check (status in ('Available', 'Reserved', 'Sold')),
   description text,
   stripe_link text,

@@ -84,6 +84,7 @@ export function toWatch(row: any) {
     papers: row.papers || 'Unsure',
     price: Number(row.price || 0),
     image: row.image || '',
+    images: Array.isArray(row.images) ? row.images : (row.image ? [row.image] : []),
     status: row.status || 'Available',
     description: row.description || '',
     createdAt: row.created_at || row.createdAt || '',
@@ -92,6 +93,11 @@ export function toWatch(row: any) {
 }
 
 export function fromWatch(body: any) {
+  const images = Array.isArray(body.images)
+    ? body.images.filter((image: any) => typeof image === 'string' && image.trim().length > 0)
+    : [];
+  const primaryImage = images[0] || body.image || '';
+
   return {
     brand: body.brand,
     model: body.model,
@@ -101,7 +107,8 @@ export function fromWatch(body: any) {
     box: body.box || 'Unsure',
     papers: body.papers || 'Unsure',
     price: Number(body.price || 0),
-    image: body.image || '',
+    image: primaryImage,
+    images: images.length > 0 ? images : (primaryImage ? [primaryImage] : []),
     status: body.status || 'Available',
     description: body.description || '',
     stripe_link: body.stripeLink || body.stripe_link || '',

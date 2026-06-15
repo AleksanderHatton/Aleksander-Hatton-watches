@@ -9,6 +9,7 @@ export interface Watch {
   papers: 'Yes' | 'No' | 'Unsure';
   price: number;
   image: string;
+  images: string[];
   status: 'Available' | 'Reserved' | 'Sold';
   description: string;
   createdAt: string;

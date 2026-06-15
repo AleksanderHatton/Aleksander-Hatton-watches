@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, ShieldCheck, Award, Box, FileText, Calendar, Compass, 
   MapPin, Clock, HelpCircle, Sparkles, MessageSquare, ChevronRight, Check
 } from 'lucide-react';
 import { Watch } from '../types';
 import { motion } from 'motion/react';
+import { getWatchImages } from '../lib/images';
 
 interface WatchDetailProps {
   watch: Watch;
@@ -14,36 +15,16 @@ interface WatchDetailProps {
 }
 
 export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: WatchDetailProps) {
-  // Preset alternative photo perspectives generated using sophisticated cropping & CSS styling 
-  // on the high-res original photograph for a truly premium horology detail catalog.
-  const galleryViews = [
-    {
-      id: 'full',
-      name: 'Primary Studio Card',
-      style: {},
-      description: 'Full-frame front presentation of the watch asset.'
-    },
-    {
-      id: 'macro-dial',
-      name: 'Macro Dial Detail',
-      style: { transform: 'scale(1.8)', transformOrigin: 'center' },
-      description: 'Zoomed macro inspection of the dial, indices, and bezel alignment.'
-    },
-    {
-      id: 'crown-curves',
-      name: 'Chronomaster Profile',
-      style: { transform: 'scale(1.4) capitalize', filter: 'contrast(1.1) brightness(0.95)' },
-      description: 'Angled study showcasing case curves, bezel design, and crown shape.'
-    },
-    {
-      id: 'monochrome',
-      name: 'Monochrome Facet Study',
-      style: { filter: 'grayscale(1) contrast(1.15)' },
-      description: 'Artistic high-contrast study showcasing the steel metalwork and luxury shadows.'
-    }
-  ];
+  const galleryImages = getWatchImages(watch);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-  const [activeView, setActiveView] = useState(galleryViews[0]);
+  useEffect(() => {
+    setActivePhotoIndex(0);
+  }, [watch.id]);
+
+  const safeActivePhotoIndex = Math.min(activePhotoIndex, galleryImages.length - 1);
+  const activePhoto = galleryImages[safeActivePhotoIndex] || galleryImages[0];
+  const activePhotoLabel = safeActivePhotoIndex === 0 ? 'Cover Photo' : `Angle ${safeActivePhotoIndex + 1}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[80vh] space-y-12">
@@ -74,13 +55,15 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
         <div className="lg:col-span-7 space-y-5">
           
           {/* Main Visual Frame */}
-          <div className="aspect-[4/3] w-full border border-zinc-200/60 bg-zinc-100 rounded-sm overflow-hidden relative shadow-xs">
-            <div className="w-full h-full overflow-hidden flex items-center justify-center bg-zinc-50">
+          <div
+            className="aspect-square w-full border border-[#D8CBB8]/80 bg-[#F3EFE6] rounded-sm overflow-hidden relative shadow-sm"
+            style={{ background: 'radial-gradient(circle at center, #FBFAF7 0%, #F3EFE6 55%, #E8DFD1 100%)' }}
+          >
+            <div className="w-full h-full overflow-hidden flex items-center justify-center">
               <img
-                src={watch.image}
-                alt={`${watch.brand} ${watch.model} - ${activeView.name}`}
-                className="w-full h-full object-cover transition-all duration-700"
-                style={activeView.style}
+                src={activePhoto}
+                alt={`${watch.brand} ${watch.model} - ${activePhotoLabel}`}
+                className="w-full h-full object-contain p-5 sm:p-7 transition-all duration-700"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -90,44 +73,43 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
               {watch.condition} Condition
             </div>
 
-            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-xs border border-zinc-200/60 px-3 py-1.5 text-[9px] text-zinc-500 font-mono rounded-sm uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-xs border border-[#D8CBB8] px-3 py-1.5 text-[9px] text-zinc-500 font-mono rounded-sm uppercase tracking-wider shadow-sm flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>{activeView.name}</span>
+              <span>{activePhotoLabel}</span>
             </div>
           </div>
 
-          {/* Interactive Thumbnails Selector for "All Photos" */}
+          {/* Real uploaded image gallery */}
           <div className="space-y-2">
             <span className="block text-[9px] tracking-widest font-mono text-zinc-400 uppercase font-bold">
-              MULTI-ANGLE APPRAISAL VIEWS ({galleryViews.length})
+              REAL MULTI-ANGLE GALLERY ({galleryImages.length})
             </span>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {galleryViews.map((view) => {
-                const isActive = activeView.id === view.id;
+            <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-3">
+              {galleryImages.map((photo, index) => {
+                const isActive = safeActivePhotoIndex === index;
                 return (
                   <button
-                    key={view.id}
-                    onClick={() => setActiveView(view)}
-                    className={`border p-1.5 rounded-sm transition-all text-left bg-zinc-50 hover:bg-zinc-100 flex flex-col justify-between group h-20 relative overflow-hidden cursor-pointer ${
+                    key={`${photo}-${index}`}
+                    onClick={() => setActivePhotoIndex(index)}
+                    className={`border p-1.5 rounded-sm transition-all text-left bg-[#F7F3EC] hover:bg-[#F1EADF] flex flex-col justify-between group h-24 relative overflow-hidden cursor-pointer ${
                       isActive 
-                        ? 'border-[#C5A880] ring-1 ring-[#C5A880]/20 bg-white shadow-xs' 
-                        : 'border-zinc-200 hover:border-zinc-350'
+                        ? 'border-[#C5A880] ring-1 ring-[#C5A880]/25 bg-[#F7F3EC] shadow-xs' 
+                        : 'border-[#D8CBB8]/70 hover:border-[#C5A880]/60'
                     }`}
                   >
-                    <div className="w-full h-10 overflow-hidden rounded bg-zinc-100 border border-zinc-200/40 relative">
+                    <div className="w-full h-14 overflow-hidden rounded bg-[#EFE8DC] border border-[#D8CBB8]/60 relative">
                       <img
-                        src={watch.image}
-                        alt={view.name}
-                        className="w-full h-full object-cover"
-                        style={view.style}
+                        src={photo}
+                        alt={`${watch.brand} ${watch.model} angle ${index + 1}`}
+                        className="w-full h-full object-contain p-1"
                         referrerPolicy="no-referrer"
                       />
                     </div>
                     <span className={`text-[8.5px] font-mono tracking-wide uppercase font-bold truncate mt-1 ${
                       isActive ? 'text-[#C5A880]' : 'text-zinc-500 group-hover:text-zinc-850'
                     }`}>
-                      {view.name}
+                      {index === 0 ? 'Cover' : `Angle ${index + 1}`}
                     </span>
                   </button>
                 );
@@ -136,9 +118,9 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
           </div>
 
           {/* Perspective Description Box */}
-          <div className="p-4 bg-zinc-50 rounded border border-zinc-150 text-xs text-zinc-550 leading-relaxed font-sans">
-            <span className="text-[9px] font-mono font-bold text-[#C5A880] block mb-0.5 uppercase">Appraisal Detail Notes</span>
-            "{activeView.description}" Every micro-facet of this timepiece has been thoroughly cataloged by our Sheffield house horologist.
+          <div className="p-4 bg-[#F7F3EC] rounded border border-[#D8CBB8]/70 text-xs text-zinc-550 leading-relaxed font-sans">
+            <span className="text-[9px] font-mono font-bold text-[#C5A880] block mb-0.5 uppercase">Image Detail Notes</span>
+            These are the actual photos uploaded for this listing. Use the gallery to inspect the dial, bezel, case, crown side, bracelet or strap, clasp, caseback, box and papers where supplied.
           </div>
 
           {/* Premium Verification / Trust Badges */}

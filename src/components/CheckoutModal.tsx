@@ -3,6 +3,7 @@ import { X, CreditCard, Ship, ShoppingBag, Eye, ShieldCheck, CheckCircle } from 
 import { Watch } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { apiFetch } from '../lib/api';
+import { getWatchCoverImage } from '../lib/images';
 
 interface CheckoutModalProps {
   watch: Watch | null;
@@ -85,11 +86,11 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
             </div>
             
             <div className="space-y-4">
-              <div className="aspect-[4/3] w-full rounded-sm overflow-hidden bg-zinc-100 border border-zinc-200">
+              <div className="aspect-square w-full rounded-sm overflow-hidden bg-[#F3EFE6] border border-[#D8CBB8]">
                 <img 
-                  src={watch.image} 
+                  src={getWatchCoverImage(watch)} 
                   alt={`${watch.brand} ${watch.model}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-4"
                   referrerPolicy="no-referrer"
                 />
               </div>
