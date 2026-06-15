@@ -16,6 +16,16 @@ export default function PolicyModal({ isOpen, onClose, initialTab }: PolicyModal
     }
   }, [initialTab]);
 
+  // Lock the page behind the modal so touch scrolling moves the modal, not the page.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const tabs = [
@@ -115,8 +125,8 @@ export default function PolicyModal({ isOpen, onClose, initialTab }: PolicyModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="relative w-full max-w-4xl bg-white border border-zinc-250 rounded-sm shadow-2xl flex flex-col md:flex-row max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="relative w-full max-w-4xl bg-white border border-zinc-250 rounded-sm shadow-2xl flex flex-col md:flex-row my-4 md:my-0 md:max-h-[85dvh] md:overflow-hidden">
         
         {/* Left Hand Navigation Sidebar (Policies list) */}
         <div className="w-full md:w-1/3 bg-zinc-50 border-r border-zinc-200 p-4 flex flex-col justify-between">
@@ -156,7 +166,7 @@ export default function PolicyModal({ isOpen, onClose, initialTab }: PolicyModal
         </div>
 
         {/* Right Hand Policy Content Container */}
-        <div className="w-full md:w-2/3 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto bg-white">
+        <div className="w-full md:w-2/3 p-6 sm:p-8 flex flex-col justify-between bg-white min-h-0 md:overflow-y-auto">
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 transition-colors cursor-pointer"
