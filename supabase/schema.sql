@@ -138,10 +138,15 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
+-- security definer is required here: this function reads public.profiles,
+-- and the profiles select policy itself calls is_admin(). Without definer
+-- rights Postgres raises "infinite recursion detected in policy for relation
+-- profiles" and profile reads fail for logged-in users.
 create or replace function public.is_admin()
 returns boolean
 language sql
 stable
+security definer set search_path = public
 as $$
   select exists (
     select 1 from public.profiles

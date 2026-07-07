@@ -10,19 +10,24 @@ import SourcingForm from './components/SourcingForm';
 import ValuationForm from './components/ValuationForm';
 import CheckoutModal from './components/CheckoutModal';
 import PolicyModal from './components/PolicyModal';
-import AdminDashboard from './components/AdminDashboard';
-import ClientDashboard from './components/ClientDashboard';
+// Lazy-loaded: only fetched when someone actually opens a dashboard, which
+// keeps the main bundle small for the 99% of visitors who never log in.
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
+const ClientDashboard = React.lazy(() => import('./components/ClientDashboard'));
 import AuthModal from './components/AuthModal';
 import WatchDetail from './components/WatchDetail';
 import { Watch } from './types';
 import { apiFetch } from './lib/api';
 import { getCurrentUserProfile, supabase } from './lib/supabase';
 import { SHOP_BRANDS } from './lib/brands';
-import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL, pathFromView, viewFromPath } from './lib/contact';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL, pathFromView, viewFromPath, watchIdFromPath, watchPath } from './lib/contact';
 import { FALLBACK_WATCH_IMAGE, getWatchCoverImage } from './lib/images';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<string>(() => viewFromPath(window.location.pathname));
+
+  const [selectedWatch, setSelectedWatchState] = useState<Watch | null>(null);
+  const [stock, setStock] = useState<Watch[]>([]);
 
   const setView = (view: string) => {
     setCurrentView(view);
@@ -32,13 +37,41 @@ export default function App() {
     }
   };
 
+  // Selecting a watch pushes a real URL so each listing is linkable,
+  // shareable and indexable. Passing null returns to the shop URL.
+  const setSelectedWatch = (watch: Watch | null) => {
+    setSelectedWatchState(watch);
+    const nextPath = watch ? watchPath(watch.id) : pathFromView(currentView);
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath);
+    }
+  };
+
+  // Keep a ref so the popstate listener and deep-link resolver always see
+  // current stock without re-registering listeners.
+  const stockRef = React.useRef<Watch[]>([]);
+  useEffect(() => { stockRef.current = stock; }, [stock]);
+
   useEffect(() => {
-    const handlePopState = () => setCurrentView(viewFromPath(window.location.pathname));
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      setCurrentView(viewFromPath(path));
+      const watchId = watchIdFromPath(path);
+      setSelectedWatchState(watchId ? stockRef.current.find(w => w.id === watchId) || null : null);
+    };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-  const [selectedWatch, setSelectedWatch] = useState<Watch | null>(null);
-  const [stock, setStock] = useState<Watch[]>([]);
+
+
+  // Resolve a direct visit to /watch/:id once stock has loaded.
+  useEffect(() => {
+    const watchId = watchIdFromPath(window.location.pathname);
+    if (watchId && stock.length > 0 && (!selectedWatch || selectedWatch.id !== watchId)) {
+      const match = stock.find(w => w.id === watchId);
+      if (match) setSelectedWatchState(match);
+    }
+  }, [stock]);
   const [selectedBrandFilter, setSelectedBrandFilter] = useState<string>('All');
   const [loadingStock, setLoadingStock] = useState(false);
   
@@ -156,6 +189,32 @@ export default function App() {
     document.title = selectedWatch
       ? `${selectedWatch.brand} ${selectedWatch.model} | ${base}`
       : titles[currentView] || titles.home;
+
+    // Keep the canonical URL in sync with the route. Every path serves the
+    // same index.html on an SPA, so without this Google sees identical
+    // canonical signals on every page.
+    const canonicalPath = selectedWatch ? watchPath(selectedWatch.id) : pathFromView(currentView);
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `https://www.ahwatches.com${canonicalPath === '/' ? '/' : canonicalPath}`;
+
+    // Per-view meta description so search snippets match the page content.
+    const descriptions: Record<string, string> = {
+      home: 'Aleksander Hatton is a Sheffield-based watch dealer helping clients buy, sell, value and source watches. Working, broken, damaged and non-running watches welcome for valuation.',
+      shop: 'Browse watches for sale from Aleksander Hatton in Sheffield. Seiko, Tissot, Tag Heuer and more, checked and photographed before listing.',
+      valuation: 'Sell your watch in Sheffield. Free valuations on working, broken, damaged and non-running watches. All brands considered.',
+      source: 'Looking for a specific watch? Aleksander Hatton sources watches to order across brands, references and budgets.',
+      contact: 'Contact Aleksander Hatton, independent watch dealer in Sheffield, by phone, WhatsApp or email.',
+    };
+    const description = selectedWatch
+      ? `${selectedWatch.brand} ${selectedWatch.model}${selectedWatch.reference ? ` ref ${selectedWatch.reference}` : ''} for sale from Aleksander Hatton, Sheffield watch dealer.`
+      : descriptions[currentView] || descriptions.home;
+    const metaDescription = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (metaDescription) metaDescription.content = description;
   }, [currentView, selectedWatch]);
 
   // Filter watch utility
@@ -198,14 +257,14 @@ export default function App() {
       <Header 
         currentView={selectedWatch ? 'shop' : currentView} 
         setView={(v) => {
-          setSelectedWatch(null);
+          setSelectedWatchState(null);
           setView(v);
         }} 
         session={session}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         openPolicies={(t) => {
-          setSelectedWatch(null);
+          setSelectedWatchState(null);
           setPolicyType(t);
           setIsPolicyOpen(true);
         }}
@@ -257,7 +316,7 @@ export default function App() {
                   setIsCheckoutOpen(true);
                 }}
                 onEnquire={(w) => {
-                  setSelectedWatch(null);
+                  setSelectedWatchState(null);
                   setView('contact');
                   setContactForm({
                     name: '',
@@ -947,11 +1006,13 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ClientDashboard 
-                session={session}
-                onLogout={handleLogout}
-                setView={setView}
-              />
+              <React.Suspense fallback={<div className="py-24 text-center"><RefreshCw className="w-8 h-8 text-[#C5A880] animate-spin mx-auto" /></div>}>
+                <ClientDashboard 
+                  session={session}
+                  onLogout={handleLogout}
+                  setView={setView}
+                />
+              </React.Suspense>
             </motion.div>
           )}
 
@@ -963,7 +1024,9 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <AdminDashboard onLogout={handleLogout} />
+              <React.Suspense fallback={<div className="py-24 text-center"><RefreshCw className="w-8 h-8 text-[#C5A880] animate-spin mx-auto" /></div>}>
+                <AdminDashboard onLogout={handleLogout} />
+              </React.Suspense>
             </motion.div>
           )}
 

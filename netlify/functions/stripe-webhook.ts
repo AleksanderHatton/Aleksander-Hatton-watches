@@ -30,6 +30,16 @@ export const handler = async (event: any) => {
 
       if (!orderId || !watchId) return json(400, { error: 'Missing order_id or watch_id metadata.' });
 
+      // Check for a double sale before overwriting: two buyers can hold live
+      // checkout sessions for the same watch, so the second completed payment
+      // needs a refund and a loud alert rather than a silent overwrite.
+      const { data: existingWatch } = await supabase
+        .from('watches')
+        .select('id, brand, model, status')
+        .eq('id', watchId)
+        .maybeSingle();
+      const alreadySold = existingWatch?.status === 'Sold';
+
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .update({ payment_status: 'Paid', payment_method: 'Stripe Checkout', stripe_session_id: session.id })
@@ -37,6 +47,18 @@ export const handler = async (event: any) => {
         .select('*')
         .single();
       if (orderError) throw orderError;
+
+      if (alreadySold) {
+        await supabase.from('notifications').insert({
+          title: 'DOUBLE SALE - refund required',
+          message: `${order.client_name} paid for ${existingWatch.brand} ${existingWatch.model} but it was already marked Sold. Refund this payment in Stripe.`,
+          type: 'payment',
+        });
+        await sendEmail({
+          subject: `URGENT: double payment on ${existingWatch.brand} ${existingWatch.model}`,
+          html: `<h2>Double sale detected</h2><p>${escapeHtml(order.client_name)} (${escapeHtml(order.client_email)}) completed payment for a watch that was already sold. Refund the later payment in the Stripe dashboard and contact the buyer.</p>`,
+        });
+      }
 
       const { data: watch, error: watchError } = await supabase
         .from('watches')

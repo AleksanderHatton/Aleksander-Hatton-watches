@@ -1,5 +1,7 @@
 import {
+  checkRateLimit,
   clampText,
+  errorResponse,
   escapeHtml,
   fromSourcing,
   fromValuation,
@@ -9,6 +11,7 @@ import {
   isHoneypotTripped,
   isValidEmail,
   json,
+  orFilterValue,
   requireBody,
   sendEmail,
   toOrder,
@@ -82,7 +85,7 @@ export const handler = async (event: any) => {
         let query = supabase.from('valuations').select('*').order('created_at', { ascending: false });
         if (!requester.isAdmin) {
           if (!requester.user?.email) return json(401, { error: 'Login required.' });
-          query = query.or(`user_id.eq.${requester.user.id},email.eq.${requester.user.email.toLowerCase()}`);
+          query = query.or(`user_id.eq.${requester.user.id},email.eq.${orFilterValue(requester.user.email.toLowerCase())}`);
         }
         const { data, error } = await query;
         if (error) throw error;
@@ -90,6 +93,7 @@ export const handler = async (event: any) => {
       }
 
       if (method === 'POST') {
+        checkRateLimit(event, 'valuations', 5);
         const body = requireBody(event);
         if (isHoneypotTripped(body)) return json(200, { ok: true });
         if (!String(body.name || '').trim() || !isValidEmail(body.email)) {
@@ -129,7 +133,7 @@ export const handler = async (event: any) => {
         let query = supabase.from('sourcing_requests').select('*').order('created_at', { ascending: false });
         if (!requester.isAdmin) {
           if (!requester.user?.email) return json(401, { error: 'Login required.' });
-          query = query.or(`user_id.eq.${requester.user.id},email.eq.${requester.user.email.toLowerCase()}`);
+          query = query.or(`user_id.eq.${requester.user.id},email.eq.${orFilterValue(requester.user.email.toLowerCase())}`);
         }
         const { data, error } = await query;
         if (error) throw error;
@@ -137,6 +141,7 @@ export const handler = async (event: any) => {
       }
 
       if (method === 'POST') {
+        checkRateLimit(event, 'sourcing', 5);
         const body = requireBody(event);
         if (isHoneypotTripped(body)) return json(200, { ok: true });
         if (!String(body.name || '').trim() || !isValidEmail(body.email)) {
@@ -176,7 +181,7 @@ export const handler = async (event: any) => {
         let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
         if (!requester.isAdmin) {
           if (!requester.user?.email) return json(401, { error: 'Login required.' });
-          query = query.or(`user_id.eq.${requester.user.id},client_email.eq.${requester.user.email.toLowerCase()}`);
+          query = query.or(`user_id.eq.${requester.user.id},client_email.eq.${orFilterValue(requester.user.email.toLowerCase())}`);
         }
         const { data, error } = await query;
         if (error) throw error;
@@ -204,6 +209,7 @@ export const handler = async (event: any) => {
     }
 
     if (resource === 'contact' && method === 'POST') {
+      checkRateLimit(event, 'contact', 5);
       const body = requireBody(event);
       if (isHoneypotTripped(body)) return json(200, { ok: true });
       if (!String(body.name || '').trim() || !isValidEmail(body.email) || !String(body.message || '').trim()) {
@@ -266,7 +272,6 @@ export const handler = async (event: any) => {
 
     return json(404, { error: `Route not found: /${route.join('/')}` });
   } catch (err: any) {
-    console.error(err);
-    return json(500, { error: err.message || 'Server error.' });
+    return errorResponse(err);
   }
 };

@@ -22,6 +22,35 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
     setActivePhotoIndex(0);
   }, [watch.id]);
 
+  // Product structured data so Google can show price, availability and
+  // images in rich results for individual watch pages.
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'watch-product-jsonld';
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: `${watch.brand} ${watch.model}`,
+      brand: { '@type': 'Brand', name: watch.brand },
+      sku: watch.reference || undefined,
+      description: watch.description || `${watch.brand} ${watch.model} available from Aleksander Hatton, Sheffield.`,
+      image: getWatchImages(watch),
+      offers: {
+        '@type': 'Offer',
+        url: `https://www.ahwatches.com/watch/${watch.id}`,
+        priceCurrency: 'GBP',
+        price: watch.price,
+        availability: watch.status === 'Available'
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/SoldOut',
+        seller: { '@type': 'Organization', name: 'Aleksander Hatton' },
+      },
+    });
+    document.head.appendChild(script);
+    return () => { document.getElementById('watch-product-jsonld')?.remove(); };
+  }, [watch.id]);
+
   const safeActivePhotoIndex = Math.min(activePhotoIndex, galleryImages.length - 1);
   const activePhoto = galleryImages[safeActivePhotoIndex] || galleryImages[0];
   const activePhotoLabel = safeActivePhotoIndex === 0 ? 'Cover Photo' : `Angle ${safeActivePhotoIndex + 1}`;

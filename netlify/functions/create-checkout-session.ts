@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { escapeHtml, getRequester, getServiceSupabase, json, requireBody, sendEmail } from './_shared';
+import { checkRateLimit, clampText, errorResponse, escapeHtml, getRequester, getServiceSupabase, isHoneypotTripped, isValidEmail, json, requireBody, sendEmail } from './_shared';
 
 export const handler = async (event: any) => {
   if (event.httpMethod === 'OPTIONS') return json(200, { ok: true });
@@ -12,10 +12,12 @@ export const handler = async (event: any) => {
     if (!stripeKey) return json(500, { error: 'Missing STRIPE_SECRET_KEY.' });
     if (!siteUrl) return json(500, { error: 'Missing SITE_URL.' });
 
+    checkRateLimit(event, 'checkout', 6);
     const stripe = new Stripe(stripeKey);
     const supabase = getServiceSupabase();
     const requester = await getRequester(event, supabase);
     const body = requireBody(event);
+    if (isHoneypotTripped(body)) return json(400, { error: 'Invalid request.' });
 
     const watchId = body.watchId || body.watch_id;
     if (!watchId) return json(400, { error: 'watchId is required.' });
@@ -41,19 +43,22 @@ export const handler = async (event: any) => {
         price: amount,
         reference: watch.reference || '',
       },
-      client_name: body.clientName || '',
-      client_email: String(body.clientEmail || '').toLowerCase().trim(),
-      client_phone: body.clientPhone || '',
-      client_address: body.clientAddress || '',
-      client_city: body.clientCity || '',
-      client_postcode: body.clientPostcode || '',
+      client_name: clampText(body.clientName, 120),
+      client_email: clampText(String(body.clientEmail || '').toLowerCase(), 320),
+      client_phone: clampText(body.clientPhone, 40),
+      client_address: clampText(body.clientAddress, 300),
+      client_city: clampText(body.clientCity, 120),
+      client_postcode: clampText(body.clientPostcode, 20),
       payment_status: 'Pending',
       payment_method: 'Stripe Checkout',
       amount,
     };
 
-    if (!orderPayload.client_name || !orderPayload.client_email || !orderPayload.client_phone) {
+    if (!orderPayload.client_name || !orderPayload.client_phone) {
       return json(400, { error: 'Client name, email and phone are required.' });
+    }
+    if (!isValidEmail(orderPayload.client_email)) {
+      return json(400, { error: 'A valid email address is required.' });
     }
 
     const { data: order, error: orderError } = await supabase
@@ -71,6 +76,7 @@ export const handler = async (event: any) => {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       customer_email: orderPayload.client_email,
       success_url: `${siteUrl}/?payment=success&order=${order.id}`,
       cancel_url: `${siteUrl}/?payment=cancelled&watch=${watch.id}`,
@@ -121,7 +127,6 @@ export const handler = async (event: any) => {
       },
     });
   } catch (err: any) {
-    console.error(err);
-    return json(500, { error: err.message || 'Could not create checkout session.' });
+    return errorResponse(err);
   }
 };

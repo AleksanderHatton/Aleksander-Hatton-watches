@@ -22,6 +22,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
     clientPostcode: '',
   });
 
+  const [hp, setHp] = useState(''); // honeypot, stays empty for real users
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successInfo, setSuccessInfo] = useState<any>(null);
@@ -67,6 +68,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
           clientAddress: formData.clientAddress,
           clientCity: formData.clientCity,
           clientPostcode: formData.clientPostcode,
+          company: hp,
         })
       });
 
@@ -170,6 +172,17 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
                 </h3>
                 
                 <div className="space-y-3">
+                  {/* Honeypot: hidden from real users, bots fill it and get rejected server-side. */}
+                  <input
+                    type="text"
+                    name="company"
+                    value={hp}
+                    onChange={(e) => setHp(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    style={{ position: 'absolute', left: '-9999px', height: 0, width: 0, opacity: 0 }}
+                  />
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1 font-bold">Full legal Name</label>
                     <input 

@@ -32,7 +32,19 @@ export const PATH_TO_VIEW: Record<string, string> = {
 
 export function viewFromPath(pathname: string) {
   const cleanPath = pathname.replace(/\/$/, '') || '/';
+  if (watchIdFromPath(cleanPath)) return 'shop';
   return PATH_TO_VIEW[cleanPath] || 'home';
+}
+
+// Individual watches get real URLs (/watch/:id) so they can be linked,
+// shared, indexed by Google and listed in the sitemap.
+export function watchIdFromPath(pathname: string): string | null {
+  const match = pathname.replace(/\/$/, '').match(/^\/watch\/([A-Za-z0-9-]+)$/);
+  return match ? match[1] : null;
+}
+
+export function watchPath(watchId: string) {
+  return `/watch/${watchId}`;
 }
 
 export function pathFromView(view: string) {

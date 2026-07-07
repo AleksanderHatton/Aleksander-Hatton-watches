@@ -82,9 +82,74 @@ export async function getRequester(event: any, supabase = getServiceSupabase()) 
   };
 }
 
+// Error type that carries a status code so route handlers can throw
+// user-facing errors without leaking internal details on a generic 500.
+export class HttpError extends Error {
+  statusCode: number;
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 export function requireBody(event: any) {
   if (!event.body) return {};
-  return JSON.parse(event.body);
+  // Cap request bodies at 100KB. Legitimate form submissions are tiny.
+  if (event.body.length > 100_000) {
+    throw new HttpError(413, 'Request body too large.');
+  }
+  try {
+    const parsed = JSON.parse(event.body);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('not an object');
+    }
+    return parsed;
+  } catch {
+    throw new HttpError(400, 'Request body must be a JSON object.');
+  }
+}
+
+// Convert any thrown error into a safe response. Internal errors (Supabase,
+// Stripe, etc) are logged but never echoed back to the browser, so table
+// names and SQL details stay out of responses.
+export function errorResponse(err: any) {
+  if (err instanceof HttpError) return json(err.statusCode, { error: err.message });
+  console.error(err);
+  return json(500, { error: 'Server error. Please try again shortly.' });
+}
+
+// PostgREST .or() filters are comma-delimited, so a value containing commas or
+// parentheses could inject extra filter clauses. Wrapping the value in double
+// quotes (and stripping quote/backslash characters) makes it a literal.
+export function orFilterValue(value: string) {
+  return `"${String(value).replace(/["\\]/g, '')}"`;
+}
+
+// Best-effort in-memory rate limiter. State only survives while the function
+// instance is warm, so this is a speed bump against casual abuse and email
+// bombing via the Resend notifications, not a hard guarantee. A durable
+// limiter would need Redis/Upstash or Cloudflare in front.
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+export function checkRateLimit(event: any, key: string, limit = 8, windowMs = 60_000): void {
+  const ip =
+    event.headers?.['x-nf-client-connection-ip'] ||
+    (event.headers?.['x-forwarded-for'] || '').split(',')[0].trim() ||
+    'unknown';
+  const bucketKey = `${key}:${ip}`;
+  const now = Date.now();
+  const bucket = rateBuckets.get(bucketKey);
+
+  if (!bucket || now > bucket.resetAt) {
+    rateBuckets.set(bucketKey, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+  bucket.count += 1;
+  if (bucket.count > limit) {
+    throw new HttpError(429, 'Too many requests. Please wait a minute and try again.');
+  }
+  // Stop the map growing without bound on a long-lived instance.
+  if (rateBuckets.size > 5000) rateBuckets.clear();
 }
 
 export async function sendEmail(params: { subject: string; html: string; to?: string; replyTo?: string }) {
