@@ -1,14 +1,11 @@
 # Aleksander Hatton Website
 
-This version has been refactored away from the unsafe local `server.ts` / `data_db.json` prototype pattern.
+Production website for Aleksander Hatton Watches using:
 
-It now uses:
-
-- Netlify for hosting
-- Netlify Functions for backend routes
-- Supabase for Auth + Postgres database
-- Stripe Checkout for real payments
-- Resend for email notifications
+- Netlify for hosting and serverless API routes
+- Supabase Auth, Postgres and Storage
+- Stripe Checkout for payments
+- Resend for transactional email
 
 ## 1. Install
 
@@ -16,35 +13,34 @@ It now uses:
 npm install
 ```
 
-## 2. Create Supabase project
+## 2. Create or update Supabase
 
-Go to Supabase, create a project, then open:
+Open **Supabase Dashboard > SQL Editor**.
 
-```text
-Supabase Dashboard > SQL Editor
-```
-
-Paste and run:
+For a new project, run:
 
 ```text
 supabase/schema.sql
 ```
 
-This creates:
+For an existing project that already has the database tables, run this once as well:
 
-- profiles
-- watches
-- valuations
-- sourcing_requests
-- orders
-- contacts
-- notifications
+```text
+supabase/storage-setup.sql
+```
 
-It also creates a trigger so new user signups automatically get a profile.
+That creates:
+
+- `watch-images` — public catalogue photography
+- `valuation-photos` — private customer photography
+
+Both buckets accept JPEG, PNG and WEBP files up to 6 MB after browser compression.
+
+The browser now compresses photos and uploads them directly to Supabase Storage using short-lived signed upload URLs. The Netlify function receives only small JSON records and storage paths, avoiding the previous `Request body too large` failure.
 
 ## 3. Create your admin account
 
-Start the site, register using your real admin email, then go back to Supabase SQL Editor and run:
+Register through the website, then run:
 
 ```sql
 update public.profiles
@@ -52,19 +48,11 @@ set role = 'admin'
 where email = 'YOUR_EMAIL@example.com';
 ```
 
-Only admin/dealer accounts can edit stock, see all customer submissions, and see the full dashboard.
+Only admin/dealer accounts can edit stock, see all customer submissions and use the dealer dashboard.
 
 ## 4. Environment variables
 
-Copy `.env.example` to `.env` locally.
-
-For Netlify, add the same variables in:
-
-```text
-Netlify > Site configuration > Environment variables
-```
-
-Required variables:
+Copy `.env.example` to `.env` locally. Add the same variables in **Netlify > Site configuration > Environment variables**:
 
 ```text
 VITE_SUPABASE_URL
@@ -84,16 +72,7 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY` or `STRIPE_SECRET_KEY` in frontend code
 
 ## 5. Stripe setup
 
-Create a Stripe account.
-
-Use test keys first:
-
-```text
-STRIPE_SECRET_KEY=sk_test_...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-```
-
-In Stripe Developers > Webhooks, add this endpoint:
+Use Stripe test keys first. In **Stripe Developers > Webhooks**, add:
 
 ```text
 https://YOUR_SITE.netlify.app/.netlify/functions/stripe-webhook
@@ -105,55 +84,45 @@ Listen for:
 checkout.session.completed
 ```
 
-Copy the webhook signing secret into:
-
-```text
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
+Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
 
 Payment flow:
 
-1. Customer clicks checkout.
-2. Function creates a Stripe Checkout Session using the database price.
-3. Customer pays on Stripe.
-4. Stripe webhook confirms payment.
-5. Order changes to `Paid`.
-6. Watch changes to `Sold`.
+1. Customer starts checkout.
+2. The Netlify function creates a Stripe Checkout Session using the database price.
+3. Stripe takes payment.
+4. The webhook confirms payment.
+5. The order changes to `Paid` and the watch changes to `Sold`.
 
 ## 6. Run locally
 
-For frontend-only testing:
+Frontend only:
 
 ```bash
 npm run dev
 ```
 
-For functions + frontend testing, use Netlify Dev:
+Frontend plus Netlify Functions:
 
 ```bash
 npx netlify-cli dev
 ```
 
-The app expects API routes like:
+The app uses routes including:
 
 ```text
 /api/stock
+/api/uploads/sign
 /api/valuations
 /api/sourcing
 /api/orders
 ```
 
-Netlify rewrites these to the functions in `netlify/functions`.
+Netlify rewrites these to `netlify/functions`.
 
 ## 7. Deploy to Netlify
 
-Push to GitHub, then in Netlify:
-
-```text
-Add new site > Import from GitHub
-```
-
-Use:
+Import the repository from GitHub and use:
 
 ```text
 Build command: npm run build
@@ -163,15 +132,10 @@ Functions directory: netlify/functions
 
 Netlify should detect `netlify.toml` automatically.
 
-## 8. Important notes
+## Upload architecture
 
-This fixes the big broken parts:
-
-- no local JSON database
-- no plaintext passwords
-- no hardcoded dealer password
-- no fake paid orders
-- no manual Stripe payment links required
-- no Express server required
-
-Photo uploads from the valuation form are currently stored in the `photos` JSON column. That works for early testing, but for a serious live site you should move those images into Supabase Storage before taking real customer uploads at scale.
+- Catalogue and valuation images are resized and converted to efficient JPEGs in the browser.
+- Up to three photos upload concurrently for faster batches.
+- Catalogue images use public URLs.
+- Valuation photos stay private; the API returns temporary signed read URLs to authorised users.
+- Listing and valuation API bodies contain URLs or storage paths, never base64 image data.

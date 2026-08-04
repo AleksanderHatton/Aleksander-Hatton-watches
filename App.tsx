@@ -854,7 +854,7 @@ export default function App() {
                             autoComplete="tel"
                             value={contactForm.phone}
                             onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                            placeholder="e.g. 07649 478871" 
+                            placeholder="e.g. +44 7469 478871" 
                             className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-zinc-800 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/35 transition-all text-sm"
                           />
                         </div>
