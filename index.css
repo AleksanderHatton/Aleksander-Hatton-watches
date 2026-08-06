@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Marcellus", Georgia, Cambria, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom styling tokens for Luxury feel */
+@layer base {
+  body {
+    @apply bg-white text-zinc-800 antialiased font-sans select-none selection:bg-[#C5A880] selection:text-white;
+    font-weight: 400;
+  }
+}
+
+/* Custom scrollbars matching the light gold aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFFFF;
+}
+::-webkit-scrollbar-thumb {
+  background: #E4E4E7;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A880;
+}
+
+
+
+/* Dealer console light theme overrides */
+.dealer-console {
+  background: #FFFFFF;
+  color: #18181B;
+}
+
+.dealer-console [class*="bg-[#080808]"],
+.dealer-console [class*="bg-[#0A0A0A]"],
+.dealer-console [class*="bg-[#0F0F0F]"],
+.dealer-console [class*="bg-[#111111]"],
+.dealer-console [class*="bg-[#111]"],
+.dealer-console [class*="bg-[#151515]"],
+.dealer-console [class*="bg-[#1A1A1A]"],
+.dealer-console [class*="bg-zinc-900"],
+.dealer-console [class*="bg-zinc-950"] {
+  background-color: #FFFFFF !important;
+}
+
+.dealer-console [class*="bg-[#C5A880]/5"],
+.dealer-console [class*="bg-black/40"],
+.dealer-console [class*="bg-black/80"],
+.dealer-console [class*="bg-black/95"],
+.dealer-console [class*="bg-black"] {
+  background-color: #F8F8F8 !important;
+}
+
+.dealer-console [class*="border-[#1A1A1A]"],
+.dealer-console [class*="border-[#1C1C1C]"],
+.dealer-console [class*="border-[#1D1D1D]"],
+.dealer-console [class*="border-[#1F1F1F]"],
+.dealer-console [class*="border-[#222222]"],
+.dealer-console [class*="border-[#222]"],
+.dealer-console [class*="border-[#2A2A2A]"],
+.dealer-console [class*="border-[#333]"],
+.dealer-console [class*="border-[#444]"],
+.dealer-console [class*="border-zinc-700"],
+.dealer-console [class*="border-zinc-800"] {
+  border-color: #E4E4E7 !important;
+}
+
+.dealer-console [class*="text-white"],
+.dealer-console [class*="text-zinc-300"] {
+  color: #18181B !important;
+}
+
+.dealer-console [class*="text-zinc-400"],
+.dealer-console [class*="text-zinc-500"],
+.dealer-console [class*="text-zinc-600"],
+.dealer-console [class*="text-zinc-650"],
+.dealer-console [class*="text-zinc-700"] {
+  color: #52525B !important;
+}
+
+.dealer-console input,
+.dealer-console select,
+.dealer-console textarea {
+  background-color: #FFFFFF !important;
+  color: #18181B !important;
+  border-color: #D4D4D8 !important;
+}
+
+.dealer-console input::placeholder,
+.dealer-console textarea::placeholder {
+  color: #71717A !important;
+}
+
+.dealer-console button[class*="hover:bg-neutral-900"]:hover,
+.dealer-console button[class*="hover:bg-neutral-950"]:hover,
+.dealer-console button[class*="hover:bg-[#252525]"]:hover,
+.dealer-console button[class*="hover:bg-[#1C1A14]"]:hover {
+  background-color: #F4F4F5 !important;
+}
+
+.dealer-console button[class*="hover:text-white"]:hover {
+  color: #18181B !important;
+}
+
+.dealer-console [class*="bg-[#2A2A2A]"] {
+  background-color: #EDEDED !important;
+  color: #18181B !important;
+}
+
+.dealer-console .lg\:sticky::-webkit-scrollbar-track,
+.dealer-console *::-webkit-scrollbar-track {
+  background: #FFFFFF;
+}
+
+.dealer-console .lg\:sticky::-webkit-scrollbar-thumb,
+.dealer-console *::-webkit-scrollbar-thumb {
+  background: #D4D4D8;
+}
+
+
+/* HARD dealer-console light mode: keeps only the admin/dealer console light. */
+body:has(.dealer-console),
+#root:has(.dealer-console),
+main:has(.dealer-console) {
+  background: #FFFFFF !important;
+  color: #18181B !important;
+}
+
+.dealer-console {
+  background: #FFFFFF !important;
+  color: #18181B !important;
+}
+
+.dealer-console input,
+.dealer-console select,
+.dealer-console textarea {
+  background: #FFFFFF !important;
+  color: #18181B !important;
+  border-color: #D4D4D8 !important;
+}
+
+.dealer-console input::placeholder,
+.dealer-console textarea::placeholder {
+  color: #71717A !important;
+}
+
+
+/* Final admin light-mode safety net.
+   This catches any remaining dark panels inside the dealer/admin console, even if
+   older dark Tailwind classes are still present in AdminDashboard.tsx. */
+.dealer-console-shell,
+.dealer-console-shell .dealer-console {
+  background: #FFFFFF !important;
+  color: #18181B !important;
+}
+
+.dealer-console-shell .dealer-console > div,
+.dealer-console-shell .dealer-console section,
+.dealer-console-shell .dealer-console article,
+.dealer-console-shell .dealer-console aside,
+.dealer-console-shell .dealer-console form,
+.dealer-console-shell .dealer-console li,
+.dealer-console-shell .dealer-console [class*="bg-[#080808]"],
+.dealer-console-shell .dealer-console [class*="bg-[#0A0A0A]"],
+.dealer-console-shell .dealer-console [class*="bg-[#0F0F0F]"],
+.dealer-console-shell .dealer-console [class*="bg-[#111111]"],
+.dealer-console-shell .dealer-console [class*="bg-[#111]"],
+.dealer-console-shell .dealer-console [class*="bg-[#151515]"],
+.dealer-console-shell .dealer-console [class*="bg-[#1A1A1A]"],
+.dealer-console-shell .dealer-console [class*="bg-[#222222]"],
+.dealer-console-shell .dealer-console [class*="bg-zinc-900"],
+.dealer-console-shell .dealer-console [class*="bg-zinc-950"],
+.dealer-console-shell .dealer-console [class*="bg-neutral-900"],
+.dealer-console-shell .dealer-console [class*="bg-neutral-950"],
+.dealer-console-shell .dealer-console [class*="bg-black"] {
+  background-color: #FFFFFF !important;
+}
+
+.dealer-console-shell .dealer-console [class*="border-[#1A1A1A]"],
+.dealer-console-shell .dealer-console [class*="border-[#1C1C1C]"],
+.dealer-console-shell .dealer-console [class*="border-[#1D1D1D]"],
+.dealer-console-shell .dealer-console [class*="border-[#1F1F1F]"],
+.dealer-console-shell .dealer-console [class*="border-[#222222]"],
+.dealer-console-shell .dealer-console [class*="border-[#2A2A2A]"],
+.dealer-console-shell .dealer-console [class*="border-zinc-700"],
+.dealer-console-shell .dealer-console [class*="border-zinc-800"],
+.dealer-console-shell .dealer-console [class*="border-emerald-800"],
+.dealer-console-shell .dealer-console [class*="border-red-900"] {
+  border-color: #E4E4E7 !important;
+}
+
+.dealer-console-shell .dealer-console [class*="text-white"],
+.dealer-console-shell .dealer-console [class*="text-zinc-300"],
+.dealer-console-shell .dealer-console [class*="text-zinc-400"],
+.dealer-console-shell .dealer-console [class*="text-zinc-500"],
+.dealer-console-shell .dealer-console [class*="text-zinc-600"],
+.dealer-console-shell .dealer-console [class*="text-zinc-700"] {
+  color: #3F3F46 !important;
+}
+
+.dealer-console-shell .dealer-console h1,
+.dealer-console-shell .dealer-console h2,
+.dealer-console-shell .dealer-console h3,
+.dealer-console-shell .dealer-console h4,
+.dealer-console-shell .dealer-console h5,
+.dealer-console-shell .dealer-console h6,
+.dealer-console-shell .dealer-console [class*="text-zinc-950"],
+.dealer-console-shell .dealer-console [class*="text-zinc-900"] {
+  color: #18181B !important;
+}
+
+.dealer-console-shell .dealer-console [class*="text-[#C5A880]"] {
+  color: #C5A880 !important;
+}
+
+.dealer-console-shell .dealer-console input,
+.dealer-console-shell .dealer-console select,
+.dealer-console-shell .dealer-console textarea {
+  background-color: #FFFFFF !important;
+  color: #18181B !important;
+  border-color: #D4D4D8 !important;
+}
+
+.dealer-console-shell .dealer-console input::placeholder,
+.dealer-console-shell .dealer-console textarea::placeholder {
+  color: #71717A !important;
+}
+
+.dealer-console-shell .dealer-console button:not([class*="bg-[#C5A880]"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-amber"]):not([class*="bg-blue"]) {
+  background-color: #FFFFFF !important;
+  color: #18181B !important;
+  border-color: #E4E4E7 !important;
+}
