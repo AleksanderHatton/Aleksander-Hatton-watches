@@ -143,7 +143,7 @@ export default function SourcingForm() {
                       required
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="e.g. 07649 478871" 
+                      placeholder="e.g. 07469 478871" 
                       className="w-full bg-zinc-50 border border-zinc-250 rounded-sm px-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#C5A880] focus:bg-white transition-all font-semibold"
                     />
                   </div>

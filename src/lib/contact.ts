@@ -1,8 +1,8 @@
-export const CONTACT_PHONE_RAW = '07649478871';
-export const CONTACT_PHONE_DISPLAY = '07649 478871';
+export const CONTACT_PHONE_RAW = '07469478871';
+export const CONTACT_PHONE_DISPLAY = '07469 478871';
 export const CONTACT_PHONE_TEL = `tel:${CONTACT_PHONE_RAW}`;
-export const CONTACT_PHONE_INTERNATIONAL = '+447649478871';
-export const WHATSAPP_URL = 'https://wa.me/447649478871';
+export const CONTACT_PHONE_INTERNATIONAL = '+447469478871';
+export const WHATSAPP_URL = 'https://wa.me/447469478871';
 export const CONTACT_EMAIL = 'inquiries@ahwatches.com';
 
 export const VIEW_TO_PATH: Record<string, string> = {

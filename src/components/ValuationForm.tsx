@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { VALUATION_BRANDS } from '../lib/brands';
 import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL } from '../lib/contact';
-import { Upload, CheckCircle, ShieldAlert, Sparkles, Phone, MessageCircle } from 'lucide-react';
+import { uploadImageFile } from '../lib/uploads';
+import { Upload, CheckCircle, ShieldAlert, Sparkles, Phone, MessageCircle, RefreshCw } from 'lucide-react';
 
 export default function ValuationForm() {
   const [formData, setFormData] = useState({
@@ -33,6 +34,12 @@ export default function ValuationForm() {
     additional: ''
   });
 
+  const [photoPreviews, setPhotoPreviews] = useState<Record<string, string>>({
+    front: '', back: '', side: '', boxPapers: '', additional: ''
+  });
+  const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({
+    front: false, back: false, side: false, boxPapers: false, additional: false
+  });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -62,28 +69,30 @@ export default function ValuationForm() {
     }
   };
 
-  // Convert File to Base64
-  const processFile = (file: File, key: string) => {
-    if (!file.type.startsWith('image/')) {
-      setError('Only image files are permitted.');
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setError('Image file size must be less than 8MB.');
-      return;
-    }
+  // Compress and upload directly to private Supabase Storage.
+  const processFile = async (file: File, key: string) => {
+    setError('');
+    setUploadingPhotos(prev => ({ ...prev, [key]: true }));
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPhotos(prev => ({
-        ...prev,
-        [key]: reader.result as string
-      }));
-    };
-    reader.onerror = () => {
-      setError('Error parsing watch photo files.');
-    };
-    reader.readAsDataURL(file);
+    try {
+      const uploaded = await uploadImageFile(file, 'valuation', {
+        maxDimension: 1800,
+        quality: 0.84,
+        square: false,
+      });
+
+      setPhotos(prev => ({ ...prev, [key]: uploaded.value }));
+      setPhotoPreviews(prev => {
+        if (prev[key]?.startsWith('blob:')) URL.revokeObjectURL(prev[key]);
+        return { ...prev, [key]: uploaded.previewUrl };
+      });
+    } catch (err: any) {
+      setError(err.message || 'Photo upload failed. Please try again.');
+    } finally {
+      setUploadingPhotos(prev => ({ ...prev, [key]: false }));
+      const input = fileInputRefs[key].current;
+      if (input) input.value = '';
+    }
   };
 
   // Drag and drop event handlers
@@ -124,13 +133,21 @@ export default function ValuationForm() {
 
   const removePhoto = (key: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (photoPreviews[key]?.startsWith('blob:')) URL.revokeObjectURL(photoPreviews[key]);
     setPhotos(prev => ({ ...prev, [key]: '' }));
+    setPhotoPreviews(prev => ({ ...prev, [key]: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (Object.values(uploadingPhotos).some(Boolean)) {
+      setError('Please wait for the photo uploads to finish.');
+      setLoading(false);
+      return;
+    }
 
     if (!formData.name || !formData.email || !formData.phone || !formData.brand) {
       setError('Please fill in your name, email, phone number and watch brand. If you do not know the model, leave it blank.');
@@ -247,7 +264,7 @@ export default function ValuationForm() {
                   required
                   value={formData.phone}
                   onChange={handleTextChange}
-                  placeholder="e.g. 07649 478871" 
+                  placeholder="e.g. 07469 478871" 
                   className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-xs text-zinc-800 focus:outline-none focus:border-[#C5A880] transition-all focus:ring-1 focus:ring-[#C5A880]/30 select-none text-sm"
                 />
               </div>
@@ -462,7 +479,7 @@ export default function ValuationForm() {
               3. Watch Photos
             </h2>
             <p className="text-[11px] text-zinc-500 leading-relaxed max-w-xl font-mono">
-              Clear photos help us value your watch faster. Upload the front, back, side/crown and any box or papers if you have them. Max 8MB per photo.
+              Clear photos help us value your watch faster. Upload the front, back, side/crown and any box or papers if you have them. JPEG, PNG or WEBP. Max 12MB per original photo.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -476,6 +493,7 @@ export default function ValuationForm() {
                 { label: 'Details / Other', key: 'additional' }
               ].map((slot) => {
                 const isUploaded = !!photos[slot.key];
+                const isUploading = !!uploadingPhotos[slot.key];
                 const isActive = dragActive[slot.key];
 
                 return (
@@ -498,14 +516,14 @@ export default function ValuationForm() {
                       type="file" 
                       ref={fileInputRefs[slot.key]}
                       className="hidden" 
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       onChange={(e) => handleFileInputChange(e, slot.key)}
                     />
 
                     {isUploaded ? (
                       <div className="absolute inset-0 group">
                         <img 
-                          src={photos[slot.key]} 
+                          src={photoPreviews[slot.key] || photos[slot.key]} 
                           alt={slot.label} 
                           className="w-full h-full object-cover" 
                           referrerPolicy="no-referrer"
@@ -524,6 +542,11 @@ export default function ValuationForm() {
                           <CheckCircle className="w-3.5 h-3.5" />
                         </div>
                       </div>
+                    ) : isUploading ? (
+                      <>
+                        <RefreshCw className="w-6 h-6 mb-2 text-[#C5A880] animate-spin" />
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-600 font-semibold">Uploading...</span>
+                      </>
                     ) : (
                       <>
                         <Upload className={`w-6 h-6 mb-2 ${isActive ? 'text-[#C5A880]' : 'text-zinc-400'}`} />
@@ -549,10 +572,11 @@ export default function ValuationForm() {
           <div className="text-center pt-4">
             <button
               type="submit"
-              disabled={loading}
-              className="bg-[#C5A880] hover:bg-[#D5B890] disabled:bg-[#342D23] disabled:text-zinc-500 text-black font-semibold text-xs uppercase tracking-widest px-10 py-4 rounded-sm transition-colors duration-300 w-full sm:w-auto shadow-md font-sans text-xs cursor-pointer font-bold"
+              disabled={loading || Object.values(uploadingPhotos).some(Boolean)}
+              className="bg-[#C5A880] hover:bg-[#D5B890] disabled:bg-zinc-200 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold text-xs uppercase tracking-widest px-10 py-4 rounded-sm transition-colors duration-300 w-full sm:w-auto shadow-md font-sans cursor-pointer font-bold flex items-center justify-center gap-2"
             >
-              {loading ? 'SUBMITTING REQUEST...' : 'GET FREE VALUATION'}
+              {(loading || Object.values(uploadingPhotos).some(Boolean)) && <RefreshCw className="w-4 h-4 animate-spin" />}
+              {Object.values(uploadingPhotos).some(Boolean) ? 'UPLOADING PHOTOS...' : loading ? 'SUBMITTING REQUEST...' : 'GET FREE VALUATION'}
             </button>
           </div>
 
@@ -613,6 +637,10 @@ export default function ValuationForm() {
                 boxPapers: '',
                 additional: ''
               });
+              Object.values(photoPreviews).forEach(url => {
+                if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+              });
+              setPhotoPreviews({ front: '', back: '', side: '', boxPapers: '', additional: '' });
             }}
             className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-805 text-xs font-semibold uppercase tracking-widest px-8 py-3.5 rounded-sm transition-all shadow-xs font-bold cursor-pointer"
           >

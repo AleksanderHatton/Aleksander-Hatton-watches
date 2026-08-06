@@ -85,8 +85,8 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
           
           {/* Main Visual Frame */}
           <div
-            className="aspect-square w-full border border-[#D8CBB8]/80 bg-[#F3EFE6] rounded-sm overflow-hidden relative shadow-sm"
-            style={{ background: 'radial-gradient(circle at center, #FBFAF7 0%, #F3EFE6 55%, #E8DFD1 100%)' }}
+            className="aspect-square w-full border border-zinc-200 bg-zinc-100 rounded-sm overflow-hidden relative shadow-sm"
+            style={{ background: 'radial-gradient(circle at center, #ffffff 0%, #f4f4f5 62%, #e4e4e7 100%)' }}
           >
             <div className="w-full h-full overflow-hidden flex items-center justify-center">
               <img
@@ -125,11 +125,11 @@ export default function WatchDetail({ watch, onBack, onAcquire, onEnquire }: Wat
                     onClick={() => setActivePhotoIndex(index)}
                     className={`border p-1.5 rounded-sm transition-all text-left bg-[#F7F3EC] hover:bg-[#F1EADF] flex flex-col justify-between group h-24 relative overflow-hidden cursor-pointer ${
                       isActive 
-                        ? 'border-[#C5A880] ring-1 ring-[#C5A880]/25 bg-[#F7F3EC] shadow-xs' 
-                        : 'border-[#D8CBB8]/70 hover:border-[#C5A880]/60'
+                        ? 'border-zinc-500 ring-1 ring-zinc-300 bg-zinc-100 shadow-xs' 
+                        : 'border-zinc-200 hover:border-zinc-400'
                     }`}
                   >
-                    <div className="w-full h-14 overflow-hidden rounded bg-[#EFE8DC] border border-[#D8CBB8]/60 relative">
+                    <div className="w-full h-14 overflow-hidden rounded bg-zinc-100 border border-zinc-200 relative">
                       <img
                         src={photo}
                         alt={`${watch.brand} ${watch.model} angle ${index + 1}`}

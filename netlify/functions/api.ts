@@ -46,6 +46,29 @@ export const handler = async (event: any) => {
     const route = getRoute(event);
     const [resource, id, sub] = route;
 
+    if (resource === 'uploads' && id === 'sign' && method === 'POST') {
+      const body = requireBody(event);
+      const kind = body.kind === 'watch' ? 'watch' : body.kind === 'valuation' ? 'valuation' : '';
+      const contentType = String(body.contentType || '').toLowerCase();
+      const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+      if (!kind || !allowedTypes.has(contentType)) {
+        return json(400, { error: 'A valid image upload type is required.' });
+      }
+      if (kind === 'watch' && !requester.isAdmin) {
+        return json(403, { error: 'Admin access required.' });
+      }
+      if (kind === 'valuation') checkRateLimit(event, 'valuation-upload-sign', 20);
+
+      const bucket = kind === 'watch' ? 'watch-images' : 'valuation-photos';
+      const folder = kind === 'watch' ? 'catalogue' : `submissions/${new Date().toISOString().slice(0, 7)}`;
+      const path = `${folder}/${crypto.randomUUID()}.jpg`;
+      const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
+      if (error || !data?.token) throw error || new Error('Could not create a signed upload URL.');
+
+      return json(200, { bucket, path, token: data.token });
+    }
+
     if (resource === 'stock') {
       if (method === 'GET') {
         const { data, error } = await supabase
@@ -89,7 +112,28 @@ export const handler = async (event: any) => {
         }
         const { data, error } = await query;
         if (error) throw error;
-        return json(200, (data || []).map(toValuation));
+
+        const valuations = await Promise.all((data || []).map(async (row: any) => {
+          const valuation = toValuation(row);
+          const photoEntries = Object.entries(valuation.photos || {});
+          const signedEntries = await Promise.all(photoEntries.map(async ([key, value]) => {
+            const photo = typeof value === 'string' ? value : '';
+            if (!photo || photo.startsWith('http://') || photo.startsWith('https://') || photo.startsWith('data:image/')) {
+              return [key, photo];
+            }
+            const { data: signedData, error: signedError } = await supabase.storage
+              .from('valuation-photos')
+              .createSignedUrl(photo, 3600);
+            if (signedError) {
+              console.warn('Could not sign valuation photo:', signedError.message);
+              return [key, ''];
+            }
+            return [key, signedData.signedUrl];
+          }));
+          return { ...valuation, photos: Object.fromEntries(signedEntries) };
+        }));
+
+        return json(200, valuations);
       }
 
       if (method === 'POST') {

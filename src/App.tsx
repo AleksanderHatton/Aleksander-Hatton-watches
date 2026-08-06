@@ -533,7 +533,7 @@ export default function App() {
                       title={`View full details for ${watch.brand} ${watch.model}`}
                       className="bg-zinc-50 rounded-sm overflow-hidden border border-zinc-100 hover:border-[#C5A880] transition-all duration-300 flex flex-col group shadow-xs cursor-pointer hover:shadow-md hover:-translate-y-0.5"
                     >
-                      <div className="aspect-square w-full overflow-hidden bg-[#F3EFE6] border-b border-zinc-100 relative">
+                      <div className="aspect-square w-full overflow-hidden bg-zinc-100 border-b border-zinc-200 relative">
                         <img 
                           src={getWatchCoverImage(watch)} 
                           alt={`${watch.brand} ${watch.model}`}
@@ -720,7 +720,7 @@ export default function App() {
                       className="bg-zinc-50 rounded-sm overflow-hidden border border-zinc-100 hover:border-[#C5A880] transition-all duration-350 flex flex-col justify-between group shadow-xs cursor-pointer hover:shadow-md hover:-translate-y-0.5 animate-fade-in"
                     >
                       
-                      <div className="aspect-square w-full overflow-hidden bg-[#F3EFE6] border-b border-zinc-100 relative">
+                      <div className="aspect-square w-full overflow-hidden bg-zinc-100 border-b border-zinc-200 relative">
                         <img 
                           src={getWatchCoverImage(watch)} 
                           alt={`${watch.brand} ${watch.model}`}
@@ -913,7 +913,7 @@ export default function App() {
                             autoComplete="tel"
                             value={contactForm.phone}
                             onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                            placeholder="e.g. 07649 478871" 
+                            placeholder="e.g. 07469 478871" 
                             className="w-full bg-white border border-zinc-200 rounded-sm px-4 py-2.5 text-zinc-800 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/35 transition-all text-sm"
                           />
                         </div>

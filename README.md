@@ -34,7 +34,7 @@ That creates:
 - `watch-images` — public catalogue photography
 - `valuation-photos` — private customer photography
 
-Both buckets accept JPEG, PNG and WEBP files up to 6 MB after browser compression.
+Both buckets accept JPEG, PNG and WEBP files up to 6 MB after browser compression. Original files up to 12 MB are accepted by the browser uploader.
 
 The browser now compresses photos and uploads them directly to Supabase Storage using short-lived signed upload URLs. The Netlify function receives only small JSON records and storage paths, avoiding the previous `Request body too large` failure.
 
@@ -135,7 +135,7 @@ Netlify should detect `netlify.toml` automatically.
 ## Upload architecture
 
 - Catalogue and valuation images are resized and converted to efficient JPEGs in the browser.
-- Up to three photos upload concurrently for faster batches.
+- Selected photos upload directly to Supabase in parallel for faster batches.
 - Catalogue images use public URLs.
 - Valuation photos stay private; the API returns temporary signed read URLs to authorised users.
 - Listing and valuation API bodies contain URLs or storage paths, never base64 image data.

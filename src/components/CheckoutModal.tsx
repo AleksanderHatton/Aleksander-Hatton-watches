@@ -98,7 +98,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
             </div>
             
             <div className="space-y-4">
-              <div className="aspect-square w-full rounded-sm overflow-hidden bg-[#F3EFE6] border border-[#D8CBB8]">
+              <div className="aspect-square w-full rounded-sm overflow-hidden bg-zinc-100 border border-zinc-200">
                 <img 
                   src={getWatchCoverImage(watch)} 
                   alt={`${watch.brand} ${watch.model}`}

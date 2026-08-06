@@ -6,59 +6,14 @@ import {
 import { Watch, ValuationRequest, SourcingRequest, Order, ContactSubmission } from '../types';
 import { apiFetch } from '../lib/api';
 import { FALLBACK_WATCH_IMAGE, getWatchCoverImage } from '../lib/images';
+import { migrateDataImage, uploadImageFile } from '../lib/uploads';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
 const MAX_STOCK_IMAGES = 8;
-const MAX_STOCK_UPLOAD_MB = 8;
-const STOCK_IMAGE_MAX_DIMENSION = 1200;
-const STOCK_IMAGE_QUALITY = 0.82;
-
-const compressImageToDataUrl = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const source = reader.result as string;
-      const image = new Image();
-
-      image.onload = () => {
-        const longestSide = Math.max(image.width, image.height);
-        const scale = longestSide > STOCK_IMAGE_MAX_DIMENSION ? STOCK_IMAGE_MAX_DIMENSION / longestSide : 1;
-        const scaledWidth = Math.max(1, Math.round(image.width * scale));
-        const scaledHeight = Math.max(1, Math.round(image.height * scale));
-        const squareSize = Math.max(scaledWidth, scaledHeight);
-        const canvas = document.createElement('canvas');
-        canvas.width = squareSize;
-        canvas.height = squareSize;
-
-        const context = canvas.getContext('2d');
-        if (!context) {
-          reject(new Error('Image compression failed.'));
-          return;
-        }
-
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = 'high';
-        context.fillStyle = '#F3EFE6';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        const offsetX = Math.round((squareSize - scaledWidth) / 2);
-        const offsetY = Math.round((squareSize - scaledHeight) / 2);
-        context.drawImage(image, offsetX, offsetY, scaledWidth, scaledHeight);
-        resolve(canvas.toDataURL('image/jpeg', STOCK_IMAGE_QUALITY));
-      };
-
-      image.onerror = () => reject(new Error('Image file could not be read.'));
-      image.src = source;
-    };
-
-    reader.onerror = () => reject(new Error('Error parsing watch photo files.'));
-    reader.readAsDataURL(file);
-  });
-};
+const MAX_STOCK_UPLOAD_MB = 12;
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [stock, setStock] = useState<Watch[]>([]);
@@ -82,6 +37,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const [activeTab, setActiveTab] = useState<'stock' | 'valuations' | 'sourcing' | 'orders' | 'messages' | 'emails'>('stock');
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [savingStock, setSavingStock] = useState(false);
+  const [savingRecord, setSavingRecord] = useState<string | null>(null);
+  const [valuationNoteDrafts, setValuationNoteDrafts] = useState<Record<string, string>>({});
+  const [sourcingNoteDrafts, setSourcingNoteDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState({ text: '', type: '' });
 
   // For adding/editing stock
@@ -130,6 +90,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setStock(stockData);
       setValuations(valuationData);
       setSourcing(sourcingData);
+      setValuationNoteDrafts(Object.fromEntries(valuationData.map(item => [item.id, item.adminNotes || ''])));
+      setSourcingNoteDrafts(Object.fromEntries(sourcingData.map(item => [item.id, item.adminNotes || ''])));
       setOrders(orderData);
       setContacts(contactData);
       setNotifications(notificationData);
@@ -174,8 +136,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const rejectedForLimit = files.length > selectedFiles.length;
 
     for (const file of selectedFiles) {
-      if (!file.type.startsWith('image/')) {
-        setErrorStock('Only image files (JPEG, PNG, WEBP, GIF) are permitted.');
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setErrorStock('Only JPEG, PNG and WEBP images are permitted.');
         return;
       }
       if (file.size > MAX_STOCK_UPLOAD_MB * 1024 * 1024) {
@@ -184,8 +146,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
     }
 
+    setUploadingImages(true);
     try {
-      const uploadedImages = await Promise.all(selectedFiles.map(compressImageToDataUrl));
+      const uploaded = await Promise.all(
+        selectedFiles.map(file => uploadImageFile(file, 'watch', {
+          maxDimension: 1600,
+          quality: 0.84,
+          square: true,
+        }))
+      );
+      uploaded.forEach(item => URL.revokeObjectURL(item.previewUrl));
+      const uploadedImages = uploaded.map(item => item.value);
+
       setStockForm(prev => {
         const images = [...prev.images, ...uploadedImages].slice(0, MAX_STOCK_IMAGES);
         return {
@@ -199,8 +171,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setErrorStock(`Only ${remainingSlots} more photo${remainingSlots === 1 ? '' : 's'} added. Maximum is ${MAX_STOCK_IMAGES}.`);
       }
     } catch (err: any) {
-      setErrorStock(err.message || 'Error parsing watch photo files.');
+      setErrorStock(err.message || 'Photo upload failed. Please try again.');
     } finally {
+      setUploadingImages(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -304,18 +277,26 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
-    const imagesToSubmit = stockForm.images.length > 0
-      ? stockForm.images
-      : [stockForm.image || FALLBACK_WATCH_IMAGE];
+    if (uploadingImages) {
+      setErrorStock('Please wait for the photo uploads to finish.');
+      return;
+    }
 
-    const payload = {
-      ...stockForm,
-      price: priceNum,
-      image: imagesToSubmit[0],
-      images: imagesToSubmit
-    };
-
+    setSavingStock(true);
     try {
+      const sourceImages = stockForm.images.length > 0
+        ? stockForm.images
+        : [stockForm.image || FALLBACK_WATCH_IMAGE];
+      const imagesToSubmit = await Promise.all(
+        sourceImages.map(image => migrateDataImage(image, 'watch'))
+      );
+
+      const payload = {
+        ...stockForm,
+        price: priceNum,
+        image: imagesToSubmit[0],
+        images: imagesToSubmit
+      };
       const url = isEditing ? `/api/stock/${editingId}` : '/api/stock';
       const method = isEditing ? 'PUT' : 'POST';
 
@@ -326,9 +307,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       showMsg(isEditing ? 'Watch specs updated successfully.' : 'New timepiece added to live catalog.', 'success');
       resetStockForm();
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       setErrorStock(err.message || 'Error occurred saving modifications.');
+    } finally {
+      setSavingStock(false);
     }
   };
 
@@ -385,28 +368,36 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // State modification triggers for Requests (Update status & notes)
   const updateValuationStatus = async (id: string, nextStatus: string, notesText: string) => {
+    const recordKey = `valuation:${id}`;
+    setSavingRecord(recordKey);
     try {
       await apiFetch(`/api/valuations/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ status: nextStatus, adminNotes: notesText })
       });
-      showMsg('Valuation appraisal record status locked.', 'success');
-      fetchData();
+      showMsg('Valuation record saved.', 'success');
+      await fetchData();
     } catch (err) {
-      showMsg('Failed to update appraisals log.', 'error');
+      showMsg('Failed to update appraisal record.', 'error');
+    } finally {
+      setSavingRecord(null);
     }
   };
 
   const updateSourcingStatus = async (id: string, nextStatus: string, notesText: string) => {
+    const recordKey = `sourcing:${id}`;
+    setSavingRecord(recordKey);
     try {
       await apiFetch(`/api/sourcing/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ status: nextStatus, adminNotes: notesText })
       });
-      showMsg('Sourcing client status logged.', 'success');
-      fetchData();
+      showMsg('Sourcing record saved.', 'success');
+      await fetchData();
     } catch (err) {
-      showMsg('Sourcing detail logging failure.', 'error');
+      showMsg('Failed to update sourcing record.', 'error');
+    } finally {
+      setSavingRecord(null);
     }
   };
 
@@ -693,7 +684,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                 <div>
                   <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Watch photos / gallery *</label>
-                  <p className="text-[9px] text-zinc-500 mb-2">Upload up to {MAX_STOCK_IMAGES} angles. The first photo is used as the cover image across the shop, checkout and product page. Images are auto-cleaned, padded to a square frame and exported at high quality for a sharper, more uniform gallery.</p>
+                  <p className="text-[9px] text-zinc-500 mb-2">Upload up to {MAX_STOCK_IMAGES} angles. The first photo is used as the cover image across the shop, checkout and product page. Images are compressed, uploaded directly to secure storage and padded to a subtle neutral square frame for a consistent gallery.</p>
                   
                   {/* Multi-photo drag and drop area from physical Computer Drive */}
                   <div 
@@ -712,7 +703,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       type="file" 
                       ref={fileInputRef}
                       className="hidden" 
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       multiple
                       onChange={handleFileInputChange}
                     />
@@ -738,7 +729,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                           {stockForm.images.map((photo, index) => (
-                            <div key={`${photo}-${index}`} className="group relative aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-[#EFE8DC]" onClick={(e) => e.stopPropagation()}>
+                            <div key={`${photo}-${index}`} className="group relative aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-zinc-100" onClick={(e) => e.stopPropagation()}>
                               <img 
                                 src={photo} 
                                 alt={`Watch upload ${index + 1}`} 
@@ -857,9 +848,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   )}
                   <button
                     type="submit"
-                    className="flex-1 bg-[#C5A880] hover:bg-[#D5B890] text-black font-semibold uppercase tracking-wider text-[10px] py-2.5 rounded shadow"
+                    disabled={savingStock || uploadingImages}
+                    className="flex-1 bg-[#C5A880] hover:bg-[#D5B890] disabled:cursor-not-allowed disabled:opacity-60 text-black font-semibold uppercase tracking-wider text-[10px] py-2.5 rounded shadow flex items-center justify-center gap-2"
                   >
-                    {isEditing ? 'COMMIT EDITS' : 'PUBLISH WATCH TO SHOP'}
+                    {(savingStock || uploadingImages) && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                    {uploadingImages
+                      ? 'UPLOADING PHOTOS...'
+                      : savingStock
+                        ? (isEditing ? 'COMMITTING EDITS...' : 'PUBLISHING...')
+                        : (isEditing ? 'COMMIT EDITS' : 'PUBLISH WATCH TO SHOP')}
                   </button>
                 </div>
               </form>
@@ -964,7 +961,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       
                       <select
                         value={val.status}
-                        onChange={(e) => updateValuationStatus(val.id, e.target.value, val.adminNotes || '')}
+                        disabled={savingRecord === `valuation:${val.id}`}
+                        onChange={(e) => updateValuationStatus(val.id, e.target.value, valuationNoteDrafts[val.id] ?? val.adminNotes ?? '')}
                         className="bg-white text-[10px] font-medium font-mono text-zinc-700 border border-zinc-200 rounded px-2 py-1 focus:outline-none"
                       >
                         <option value="Pending Review">Set Pending Review</option>
@@ -1028,11 +1026,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         <label className="block text-[10px] font-mono text-zinc-700 uppercase font-bold mb-1">Private Appraisal logs &amp; Dealer analysis</label>
                         <textarea
                           placeholder="Log model serial lookup outcomes or dealer pricing bids..."
-                          value={val.adminNotes || ''}
+                          value={valuationNoteDrafts[val.id] ?? val.adminNotes ?? ''}
                           rows={2}
-                          onChange={(e) => updateValuationStatus(val.id, val.status, e.target.value)}
+                          onChange={(e) => setValuationNoteDrafts(prev => ({ ...prev, [val.id]: e.target.value }))}
                           className="w-full bg-white border border-zinc-200 rounded p-2 text-xs text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                         ></textarea>
+                        <button
+                          type="button"
+                          disabled={savingRecord === `valuation:${val.id}`}
+                          onClick={() => updateValuationStatus(val.id, val.status, valuationNoteDrafts[val.id] ?? val.adminNotes ?? '')}
+                          className="mt-2 px-3 py-2 border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-60 text-[9px] font-mono uppercase font-bold rounded flex items-center gap-2"
+                        >
+                          {savingRecord === `valuation:${val.id}` && <RefreshCw className="w-3 h-3 animate-spin" />}
+                          Save Notes
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1080,7 +1087,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       
                       <select
                         value={req.status}
-                        onChange={(e) => updateSourcingStatus(req.id, e.target.value, req.adminNotes || '')}
+                        disabled={savingRecord === `sourcing:${req.id}`}
+                        onChange={(e) => updateSourcingStatus(req.id, e.target.value, sourcingNoteDrafts[req.id] ?? req.adminNotes ?? '')}
                         className="bg-white text-[10px] font-semibold font-mono text-zinc-700 border border-zinc-200 rounded px-2 py-1 focus:outline-none"
                       >
                         <option value="Active Sourcing">Sourcing Active</option>
@@ -1114,11 +1122,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <label className="block text-[10px] font-mono text-zinc-700 uppercase font-bold">Wholesale trace records &amp; Dealer notes</label>
                       <textarea
                         placeholder="Log wholesaler replies, quotes received from dealer platforms..."
-                        value={req.adminNotes || ''}
+                        value={sourcingNoteDrafts[req.id] ?? req.adminNotes ?? ''}
                         rows={4}
-                        onChange={(e) => updateSourcingStatus(req.id, req.status, e.target.value)}
+                        onChange={(e) => setSourcingNoteDrafts(prev => ({ ...prev, [req.id]: e.target.value }))}
                         className="w-full bg-white border border-zinc-200 rounded p-2.5 text-xs text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white"
                       ></textarea>
+                      <button
+                        type="button"
+                        disabled={savingRecord === `sourcing:${req.id}`}
+                        onClick={() => updateSourcingStatus(req.id, req.status, sourcingNoteDrafts[req.id] ?? req.adminNotes ?? '')}
+                        className="px-3 py-2 border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-60 text-[9px] font-mono uppercase font-bold rounded flex items-center gap-2"
+                      >
+                        {savingRecord === `sourcing:${req.id}` && <RefreshCw className="w-3 h-3 animate-spin" />}
+                        Save Notes
+                      </button>
                     </div>
                   </div>
                 </div>

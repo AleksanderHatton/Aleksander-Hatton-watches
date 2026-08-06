@@ -113,17 +113,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-zinc-950/45 backdrop-blur-sm flex items-center justify-center p-4">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-md bg-[#0F0F0F] rounded border border-[#222222] p-6 sm:p-8 space-y-6 shadow-2xl relative"
+        className="w-full max-w-md bg-white rounded-sm border border-zinc-200 p-6 sm:p-8 space-y-6 shadow-2xl relative"
       >
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-950 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -131,7 +131,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         {/* Modal Header */}
         <div className="space-y-2 text-center">
           <div className="flex justify-center">
-            <div className="w-12 h-12 rounded-full border border-[#C5A880]/30 flex items-center justify-center bg-zinc-950 text-[#C5A880] mb-2 shadow-inner">
+            <div className="w-12 h-12 rounded-full border border-zinc-200 flex items-center justify-center bg-zinc-50 text-[#C5A880] mb-2 shadow-inner">
               <KeyRound className="w-5 h-5" />
             </div>
           </div>
@@ -145,28 +145,28 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         {/* Dynamic Status Badges */}
         {error && (
-          <div className="p-3 bg-red-950/40 border border-red-900 rounded-sm text-red-200 text-xs font-mono text-center flex items-center justify-center gap-2">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-sm text-red-700 text-xs font-mono text-center flex items-center justify-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="p-3 bg-emerald-950/40 border border-emerald-900 rounded-sm text-emerald-200 text-xs font-mono text-center flex items-center justify-center gap-2">
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-700 text-xs font-mono text-center flex items-center justify-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 animate-bounce" />
             <span>{success}</span>
           </div>
         )}
 
         {/* Switch Tabs */}
-        <div className="grid grid-cols-2 gap-2 border-b border-[#222222] pb-4">
+        <div className="grid grid-cols-2 gap-2 border-b border-zinc-200 pb-4">
           <button
             type="button"
             onClick={() => handleTabSwitch('login')}
             className={`py-1.5 text-[10px] font-mono uppercase font-bold tracking-wider transition-all border-b-2 cursor-pointer ${
               tab === 'login' 
                 ? 'border-[#C5A880] text-[#C5A880]' 
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             Sign In
@@ -177,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             className={`py-1.5 text-[10px] font-mono uppercase font-bold tracking-wider transition-all border-b-2 cursor-pointer ${
               tab === 'register' 
                 ? 'border-[#C5A880] text-[#C5A880]' 
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             Register Account
@@ -190,7 +190,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           {tab === 'register' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1 font-bold">Full Name *</label>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-700 mb-1 font-bold">Full Name *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 w-4 h-4 text-zinc-650" />
                   <input 
@@ -199,13 +199,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g., Alexander Mercer" 
-                    className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2.5 text-white font-sans focus:outline-none focus:border-[#C5A880] text-xs"
+                    className="w-full bg-white border border-zinc-200 rounded-sm pl-10 pr-4 py-2.5 text-zinc-900 font-sans focus:outline-none focus:border-[#C5A880] text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1 font-bold">Dealer contact phone</label>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-700 mb-1 font-bold">Dealer contact phone</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-2.5 w-4 h-4 text-zinc-650" />
                   <input 
@@ -213,7 +213,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g., +44 (0) 7700 900077" 
-                    className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2.5 text-white font-mono focus:outline-none focus:border-[#C5A880] text-xs"
+                    className="w-full bg-white border border-zinc-200 rounded-sm pl-10 pr-4 py-2.5 text-zinc-900 font-mono focus:outline-none focus:border-[#C5A880] text-xs"
                   />
                 </div>
               </div>
@@ -221,7 +221,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           )}
 
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1 font-bold">Email Address *</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-700 mb-1 font-bold">Email Address *</label>
             <div className="relative">
               <Mail className="absolute left-3 top-2.5 w-4 h-4 text-zinc-650" />
               <input 
@@ -230,13 +230,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g., mail@example.com" 
-                className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2.5 text-white font-mono focus:outline-none focus:border-[#C5A880] text-xs"
+                className="w-full bg-white border border-zinc-200 rounded-sm pl-10 pr-4 py-2.5 text-zinc-900 font-mono focus:outline-none focus:border-[#C5A880] text-xs"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1 font-bold">Secret Password *</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-700 mb-1 font-bold">Secret Password *</label>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 w-4 h-4 text-zinc-650" />
               <input 
@@ -245,7 +245,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" 
-                className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2.5 text-white font-mono focus:outline-none focus:border-[#C5A880] text-xs"
+                className="w-full bg-white border border-zinc-200 rounded-sm pl-10 pr-4 py-2.5 text-zinc-900 font-mono focus:outline-none focus:border-[#C5A880] text-xs"
               />
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           </button>
         </form>
 
-        <div className="p-3.5 bg-[#080808] text-zinc-500 font-mono text-[9px] leading-relaxed uppercase border border-[#1A1A1A] text-center">
+        <div className="p-3.5 bg-zinc-50 text-zinc-500 font-mono text-[9px] leading-relaxed uppercase border border-zinc-200 text-center">
           {tab === 'login' ? (
             <span>
               Secure connection established. All session activities and ledger validations are fully audited.
