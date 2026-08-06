@@ -1,10 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-serif: "Cinzel", Georgia, Cambria, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Bodoni Moda", Didot, "Didot LT STD", "Bodoni MT", Georgia, serif;
+  --font-mono: "Bodoni Moda", Didot, "Didot LT STD", "Bodoni MT", Georgia, serif;
 }
 
 /* Custom styling tokens for Luxury feel */
@@ -237,4 +236,51 @@ main:has(.dealer-console) {
   background-color: #FFFFFF !important;
   color: #18181B !important;
   border-color: #E4E4E7 !important;
+}
+
+
+/* Business-card typography system */
+/* The card uses a high-contrast Didone/Bodoni-style serif with generous uppercase tracking.
+   Keep body copy in Manrope for legibility, while headings, subheadings, metadata and labels
+   inherit the same visual language as the printed card. */
+.font-serif,
+.font-mono {
+  font-family: "Bodoni Moda", Didot, "Didot LT STD", "Bodoni MT", Georgia, serif !important;
+}
+
+/* The card is upright rather than italic. */
+.font-serif.italic {
+  font-style: normal !important;
+}
+
+/* Prevent old bold utility classes from making the refined card lettering too heavy. */
+.font-serif.font-bold,
+.font-serif.font-semibold,
+.font-mono.font-bold,
+.font-mono.font-semibold {
+  font-weight: 500 !important;
+}
+
+/* Match the widely spaced small-cap treatment used for WATCH DEALER / BUY | SELL | SOURCE | VALUE. */
+.font-mono.uppercase {
+  letter-spacing: 0.18em;
+  font-weight: 500 !important;
+}
+
+/* Customer-facing headings use the same restrained display weight as the card. */
+h1.font-serif,
+h2.font-serif,
+h3.font-serif,
+h4.font-serif,
+h5.font-serif,
+h6.font-serif {
+  font-weight: 500 !important;
+}
+
+/* Carry the card's typography into customer-facing CTAs without changing the admin console. */
+#root:not(:has(.dealer-console)) button[class*="uppercase"],
+#root:not(:has(.dealer-console)) a[class*="uppercase"] {
+  font-family: "Bodoni Moda", Didot, "Didot LT STD", "Bodoni MT", Georgia, serif;
+  font-weight: 500 !important;
+  letter-spacing: 0.16em;
 }
