@@ -80,26 +80,56 @@ export async function compressImageFile(file: File, options: CompressOptions = {
   }
 }
 
-async function uploadBlob(blob: Blob, kind: UploadKind): Promise<string> {
+function createUploadId() {
+  return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+async function uploadWatchBlob(blob: Blob): Promise<string> {
+  // Admin catalogue uploads do not need a Netlify signing round-trip. The
+  // authenticated Supabase session is allowed to INSERT into watch-images by
+  // the storage policy in supabase/storage-setup.sql.
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw new Error(`Could not verify your login: ${sessionError.message}`);
+  if (!sessionData.session) throw new Error('Your admin session has expired. Please log in again.');
+
+  const bucket = 'watch-images';
+  const path = `catalogue/${createUploadId()}.jpg`;
+  const { error } = await supabase.storage.from(bucket).upload(path, blob, {
+    contentType: 'image/jpeg',
+    cacheControl: '31536000',
+    upsert: false,
+  });
+
+  if (error) {
+    // Keep the real Supabase message visible here. This is an authenticated
+    // admin-only action and the message is far more useful than a generic 500.
+    throw new Error(`Photo upload failed: ${error.message}`);
+  }
+
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+}
+
+async function uploadValuationBlob(blob: Blob): Promise<string> {
+  // Valuation uploads can be submitted by visitors, so they still use a
+  // short-lived signed upload token issued by the server and remain private.
   const signed = await apiFetch<SignedUploadResponse>('/api/uploads/sign', {
     method: 'POST',
-    body: JSON.stringify({ kind, contentType: 'image/jpeg' }),
+    body: JSON.stringify({ kind: 'valuation', contentType: 'image/jpeg' }),
   });
 
   const { error } = await supabase.storage
     .from(signed.bucket)
     .uploadToSignedUrl(signed.path, signed.token, blob, {
       contentType: 'image/jpeg',
-      cacheControl: kind === 'watch' ? '31536000' : '3600',
+      cacheControl: '3600',
     });
 
-  if (error) throw new Error(error.message || 'Photo upload failed.');
-
-  if (kind === 'watch') {
-    return supabase.storage.from(signed.bucket).getPublicUrl(signed.path).data.publicUrl;
-  }
-
+  if (error) throw new Error(`Photo upload failed: ${error.message}`);
   return signed.path;
+}
+
+async function uploadBlob(blob: Blob, kind: UploadKind): Promise<string> {
+  return kind === 'watch' ? uploadWatchBlob(blob) : uploadValuationBlob(blob);
 }
 
 export async function uploadImageFile(
