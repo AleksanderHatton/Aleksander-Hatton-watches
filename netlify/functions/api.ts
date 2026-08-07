@@ -1,5 +1,6 @@
 import {
   checkRateLimit,
+  HttpError,
   clampText,
   errorResponse,
   escapeHtml,
@@ -36,6 +37,52 @@ async function createNotification(supabase: any, title: string, message: string,
   }
 }
 
+
+function createUploadId() {
+  return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+const UPLOAD_BUCKETS = {
+  watch: {
+    name: 'watch-images',
+    public: true,
+  },
+  valuation: {
+    name: 'valuation-photos',
+    public: false,
+  },
+} as const;
+
+const UPLOAD_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const UPLOAD_FILE_SIZE_LIMIT = 6 * 1024 * 1024;
+
+async function ensureUploadBucket(supabase: any, kind: 'watch' | 'valuation') {
+  const config = UPLOAD_BUCKETS[kind];
+  const { data: existing, error: getError } = await supabase.storage.getBucket(config.name);
+
+  if (!getError && existing) return config.name;
+
+  const { error: createError } = await supabase.storage.createBucket(config.name, {
+    public: config.public,
+    fileSizeLimit: UPLOAD_FILE_SIZE_LIMIT,
+    allowedMimeTypes: UPLOAD_MIME_TYPES,
+  });
+
+  // Multiple images can request signed URLs at the same time. If two function
+  // invocations race to create the same bucket, one can legitimately report that
+  // it already exists. Treat that as success and continue.
+  if (createError && !/already exists|duplicate/i.test(String(createError.message || ''))) {
+    console.error('Upload bucket setup failed:', {
+      bucket: config.name,
+      getError: getError?.message,
+      createError: createError.message,
+    });
+    throw new HttpError(503, 'Photo storage is not available yet. Please try again in a moment.');
+  }
+
+  return config.name;
+}
+
 export const handler = async (event: any) => {
   if (event.httpMethod === 'OPTIONS') return json(200, { ok: true });
 
@@ -60,11 +107,19 @@ export const handler = async (event: any) => {
       }
       if (kind === 'valuation') checkRateLimit(event, 'valuation-upload-sign', 20);
 
-      const bucket = kind === 'watch' ? 'watch-images' : 'valuation-photos';
+      const bucket = await ensureUploadBucket(supabase, kind);
       const folder = kind === 'watch' ? 'catalogue' : `submissions/${new Date().toISOString().slice(0, 7)}`;
-      const path = `${folder}/${crypto.randomUUID()}.jpg`;
+      const path = `${folder}/${createUploadId()}.jpg`;
       const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
-      if (error || !data?.token) throw error || new Error('Could not create a signed upload URL.');
+
+      if (error || !data?.token) {
+        console.error('Could not create signed upload URL:', {
+          bucket,
+          path,
+          message: error?.message || 'No upload token returned',
+        });
+        throw new HttpError(502, 'Photo upload could not be started. Please try again.');
+      }
 
       return json(200, { bucket, path, token: data.token });
     }
