@@ -3,22 +3,23 @@ import { Compass, ShieldAlert, Sparkles, CheckCircle, Award, Phone, MessageCircl
 import { apiFetch } from '../lib/api';
 import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL } from '../lib/contact';
 
-export default function SourcingForm() {
+export default function SourcingForm({initial = {}}: {initial?: {brand?: string; model?: string; reference?: string; stock?: string}}) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    brand: '',
-    model: '',
-    reference: '',
+    brand: initial.brand || '',
+    model: initial.model || '',
+    reference: initial.reference || '',
     year: '',
     condition: 'Mint',
     boxPapers: 'Full Box & Papers',
     budget: '',
     timeframe: 'Within 1 Month',
-    notes: ''
+    notes: initial.stock ? `Enquiry from stock item ${initial.stock}` : ''
   });
 
+  const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -45,7 +46,7 @@ export default function SourcingForm() {
     try {
       await apiFetch('/api/sourcing', {
         method: 'POST',
-        body: JSON.stringify(formData)
+        body: JSON.stringify({...formData, company})
       });
 
       setSuccess(true);
@@ -62,6 +63,8 @@ export default function SourcingForm() {
       
       {!success ? (
         <form onSubmit={handleSubmit} className="space-y-10">
+          <div hidden aria-hidden="true"><label>Company<input value={company} onChange={e=>setCompany(e.target.value)} tabIndex={-1} autoComplete="off" /></label></div>
+          <p className="text-sm text-zinc-600">We use your details to respond to this request. <a className="underline" href="/policies/privacy">Privacy information</a>.</p>
           
           {/* Header & Sourcing Network Intro */}
           <div className="space-y-6 text-center max-w-3xl mx-auto">
@@ -350,7 +353,7 @@ export default function SourcingForm() {
           <div className="p-4 bg-zinc-50 rounded-sm text-left border border-zinc-200 space-y-2 text-xs">
             <div className="flex gap-2 text-[10px] uppercase font-mono tracking-wider text-emerald-700 font-bold">
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>Dealer alerts dispatched successfully</span>
+              <span>Request saved successfully</span>
             </div>
             <p className="text-[10px] text-zinc-500 font-mono leading-relaxed mt-1 uppercase font-semibold">
               • Direct email with client specifications transmitted securely to: <strong>inquiries@ahwatches.com</strong>.<br />

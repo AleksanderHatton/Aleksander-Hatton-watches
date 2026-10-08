@@ -5,16 +5,16 @@ import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL, WHATSAPP_URL } from '../lib/c
 import { uploadImageFile } from '../lib/uploads';
 import { Upload, CheckCircle, ShieldAlert, Sparkles, Phone, MessageCircle, RefreshCw } from 'lucide-react';
 
-export default function ValuationForm() {
+export default function ValuationForm({initial = {}}: {initial?: {brand?: string; model?: string; reference?: string; stock?: string}}) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     preferredContact: 'Email',
     location: '',
-    brand: '',
-    model: '',
-    reference: '',
+    brand: initial.brand || '',
+    model: initial.model || '',
+    reference: initial.reference || '',
     year: '',
     condition: 'Working',
     box: 'Unsure',
@@ -23,7 +23,7 @@ export default function ValuationForm() {
     serviceHistory: '',
     askingPrice: '',
     pleaseAdvise: false,
-    additionalDetails: ''
+    additionalDetails: initial.stock ? `Enquiry from stock item ${initial.stock}` : ''
   });
 
   const [photos, setPhotos] = useState<Record<string, string>>({
@@ -40,6 +40,7 @@ export default function ValuationForm() {
   const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({
     front: false, back: false, side: false, boxPapers: false, additional: false
   });
+  const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -158,6 +159,7 @@ export default function ValuationForm() {
 
     const payload = {
       ...formData,
+      company,
       model: formData.model.trim() || 'Model not specified',
       askingPrice: formData.pleaseAdvise ? 'Unsure / Please advise' : formData.askingPrice,
       photos
@@ -183,6 +185,8 @@ export default function ValuationForm() {
       
       {!success ? (
         <form onSubmit={handleSubmit} className="space-y-10">
+          <div hidden aria-hidden="true"><label>Company<input value={company} onChange={e=>setCompany(e.target.value)} tabIndex={-1} autoComplete="off" /></label></div>
+          <p className="text-sm text-zinc-600">We use your details to respond to this request. <a className="underline" href="/policies/privacy">Privacy information</a>.</p>
           
           {/* Header Segment */}
           <div className="text-center max-w-3xl mx-auto space-y-5">

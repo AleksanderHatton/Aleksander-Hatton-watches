@@ -52,15 +52,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     model: '',
     reference: '',
     year: '',
-    condition: 'Mint',
-    box: 'Yes' as 'Yes' | 'No' | 'Unsure',
-    papers: 'Yes' as 'Yes' | 'No' | 'Unsure',
+    condition: '',
+    box: 'Unsure' as 'Yes' | 'No' | 'Unsure',
+    papers: 'Unsure' as 'Yes' | 'No' | 'Unsure',
     price: '',
     image: '',
     images: [] as string[],
     status: 'Available' as 'Available' | 'Reserved' | 'Sold',
     description: '',
-    stripeLink: ''
+    movement: '',
+    caseSize: '',
+    dialColour: '',
+    material: '',
+    serviceNotes: '',
+    warrantyNotes: '',
+    mpn: '',
+    gtin: ''
   });
 
   // Photo viewer modal state
@@ -284,6 +291,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
     setSavingStock(true);
     try {
+      if (!stockForm.image && !stockForm.images.length) throw new Error('Upload photographs of the actual watch before publishing.');
       const sourceImages = stockForm.images.length > 0
         ? stockForm.images
         : [stockForm.image || FALLBACK_WATCH_IMAGE];
@@ -331,7 +339,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       images: Array.isArray(watch.images) && watch.images.length > 0 ? watch.images : [watch.image].filter(Boolean),
       status: watch.status,
       description: watch.description,
-      stripeLink: watch.stripeLink || ''
+      movement: watch.movement || '',
+      caseSize: watch.caseSize || '',
+      dialColour: watch.dialColour || '',
+      material: watch.material || '',
+      serviceNotes: watch.serviceNotes || '',
+      warrantyNotes: watch.warrantyNotes || '',
+      mpn: watch.mpn || '',
+      gtin: watch.gtin || ''
     });
   };
 
@@ -342,7 +357,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setDeleteConfirmId(null);
       fetchData();
     } catch (err) {
-      showMsg('Removing stock piece failed.', 'error');
+      showMsg(err instanceof Error ? err.message : 'Removing stock piece failed.', 'error');
     }
   };
 
@@ -354,15 +369,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       model: '',
       reference: '',
       year: '',
-      condition: 'Mint',
-      box: 'Yes',
-      papers: 'Yes',
+      condition: '',
+      box: 'Unsure',
+      papers: 'Unsure',
       price: '',
       image: '',
       images: [],
       status: 'Available',
       description: '',
-      stripeLink: ''
+      movement: '',
+    caseSize: '',
+    dialColour: '',
+    material: '',
+    serviceNotes: '',
+    warrantyNotes: '',
+    mpn: '',
+    gtin: ''
     });
   };
 
@@ -648,6 +670,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       onChange={handleStockInputChange}
                       className="w-full bg-white border border-zinc-200 rounded-sm px-1.5 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white text-[10px]"
                     >
+                      <option value="">Select condition</option>
                       <option value="Unworn">Unworn</option>
                       <option value="Mint">Mint</option>
                       <option value="Excellent">Excellent</option>
@@ -790,22 +813,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       placeholder="https://example.com/watch-photo.jpg" 
                       className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 text-[11px] focus:outline-none focus:border-[#C5A880] focus:bg-white font-mono"
                     />
-                    <div className="flex gap-2.5 mt-2 justify-end">
-                      <button 
-                        type="button" 
-                        onClick={() => addImageUrlToGallery('https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=800')}
-                        className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
-                      >
-                        Rolex Preset
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => addImageUrlToGallery('https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800')}
-                        className="text-[9px] font-mono uppercase bg-zinc-100 text-[#C5A880] hover:bg-zinc-100 px-2 py-0.5 rounded transition-all cursor-pointer font-bold"
-                      >
-                        Patek Preset
-                      </button>
-                    </div>
+                    <p className="text-xs text-zinc-600">Upload photographs of the actual watch. Generic stock images are unsuitable for listings.</p>
                   </div>
                 </div>
 
@@ -821,20 +829,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   ></textarea>
                 </div>
 
-                <div>
-                  <label className="block text-[10px] font-mono uppercase text-zinc-700 mb-1">Legacy Stripe Link (not required)</label>
-                  <input 
-                    type="url" 
-                    name="stripeLink" 
-                    value={stockForm.stripeLink}
-                    onChange={handleStockInputChange}
-                    placeholder="Leave blank unless migrating an old Stripe link" 
-                    className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white font-mono"
-                  />
-                  <p className="text-[9px] text-zinc-700 mt-1 leading-normal font-sans">
-                    You can leave this blank. The live site now creates Stripe Checkout sessions automatically from the saved database price.
-                  </p>
-                </div>
+                <fieldset className="border border-zinc-200 p-4 space-y-3">
+                  <legend className="text-sm">Verified specifications and Google product data</legend>
+                  <p className="text-xs text-zinc-600">Leave anything unverified blank. Only enter a manufacturer's MPN or GTIN you have confirmed; do not use a serial number.</p>
+                  {(['movement','caseSize','dialColour','material','serviceNotes','warrantyNotes','mpn','gtin'] as const).map(key=>(
+                    <label key={key} className="block text-sm">{{movement:'Movement',caseSize:'Case size',dialColour:'Dial colour',material:'Material',serviceNotes:'Service / inspection notes',warrantyNotes:'Actual warranty terms',mpn:'Verified manufacturer part number',gtin:'Verified GTIN'}[key]}
+                      <input name={key} value={stockForm[key]} onChange={handleStockInputChange} className="block w-full border border-zinc-200 p-2 mt-1" />
+                    </label>
+                  ))}
+                  <p className="text-xs">Use <b>Sold</b> to retain the listing in the archive. Each physical watch needs its own record, even when its reference matches another watch.</p>
+                </fieldset>
 
                 <div className="flex gap-2.5 pt-2">
                   {isEditing && (

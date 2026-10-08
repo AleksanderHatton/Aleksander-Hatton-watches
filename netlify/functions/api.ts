@@ -1,3 +1,4 @@
+import { allWatches } from './_catalogue';
 import {
   checkRateLimit,
   HttpError,
@@ -126,12 +127,8 @@ export const handler = async (event: any) => {
 
     if (resource === 'stock') {
       if (method === 'GET') {
-        const { data, error } = await supabase
-          .from('watches')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        return json(200, (data || []).map(toWatch));
+        const data = await allWatches(supabase);
+        return json(200, data.map(toWatch));
       }
 
       if (!requester.isAdmin) return json(403, { error: 'Admin access required.' });
@@ -152,7 +149,14 @@ export const handler = async (event: any) => {
       }
 
       if (method === 'DELETE' && id) {
-        const { error } = await supabase.from('watches').delete().eq('id', id);
+        const {data: watch,error: lookupError} = await supabase.from('watches').select('status,reserved_order_id').eq('id',id).maybeSingle();
+        if(lookupError) throw lookupError;
+        if(!watch) return json(404,{error:'Watch not found.'});
+        if(watch.status==='Sold' || watch.reserved_order_id) return json(409,{error:'Sold records and active checkout reservations must be retained. Mark a completed sale as Sold instead of deleting it.'});
+        const {count, error: countError} = await supabase.from('orders').select('id',{count:'exact',head:true}).eq('watch_id',id);
+        if(countError) throw countError;
+        if(count) return json(409,{error:'This watch has order history and cannot be deleted.'});
+        const { error } = await supabase.from('watches').delete().eq('id', id).neq('status','Sold').is('reserved_order_id',null);
         if (error) throw error;
         return json(200, { ok: true });
       }

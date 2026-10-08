@@ -284,3 +284,37 @@ h6.font-serif {
   font-weight: 500 !important;
   letter-spacing: 0.16em;
 }
+
+/* Public storefront: the existing white / warm-gold brand, with readable copy. */
+.storefront { --gold:#987039; --rule:#e5e3df; color:#252725; font-size:15px; line-height:1.65; user-select:text; }
+.storefront h1,.storefront h2,.storefront h3 { font-family:Georgia,serif; font-weight:400; line-height:1.18; }
+.storefront h1 { font-size:clamp(2rem,4.2vw,3.65rem); margin:12px 0 24px; }
+.storefront h2 { font-size:1.5rem; margin:16px 0; }
+.storefront p { margin:12px 0; }
+.storefront a { text-underline-offset:4px; }
+.storefront a:hover { color:var(--gold); }
+.storefront :focus-visible { outline:2px solid var(--gold); outline-offset:5px; }
+.site-header { padding:28px 4%; display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px; align-items:center; border-bottom:1px solid var(--rule); }
+.wordmark { font-family:Georgia,serif; font-size:21px; letter-spacing:.12em; color:var(--gold); text-decoration:none; }
+.wordmark span { display:block; font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.28em; color:#666; margin-top:7px; }
+.site-nav { display:flex; gap:22px; flex-wrap:wrap; font-size:13px; }
+.site-main { max-width:1280px; margin:0 auto; padding:0 32px 72px; min-height:60vh; }
+.hero { padding:85px 0; max-width:800px; }.hero h1 { font-size:clamp(2.8rem,6vw,5.5rem); }.hero em { font-style:normal; color:var(--gold); }
+.hero>p:not(.eyebrow) { max-width:550px; color:#5a5b59; font-size:17px; }
+.eyebrow { text-transform:uppercase; letter-spacing:.16em; font-size:11px; color:var(--gold); }
+.actions { display:flex; flex-direction:column; gap:15px; margin:25px 0; }.actions.horizontal { flex-direction:row; flex-wrap:wrap; }
+.primary,.secondary { display:inline-flex; align-items:center; justify-content:center; padding:12px 22px; border:1px solid #242822; cursor:pointer; font-size:14px; text-decoration:none; }
+.primary { background:#242822; color:white!important; }.primary:hover { background:#655039; }.secondary { background:white; }
+.section { padding:40px 0; }.section-title { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:18px; }
+.watch-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
+.watch-card { border:1px solid var(--rule); }.watch-card a { text-decoration:none; }.watch-image { aspect-ratio:1; background:#fafaf8; position:relative; display:grid; place-items:center; }.watch-image img { width:100%; height:100%; object-fit:contain; }.stock-badge { position:absolute; top:12px; right:12px; font-size:11px; background:#ffffffed; padding:4px 8px; }.watch-card-copy { padding:18px; }.watch-card h2 { font-size:20px; margin:8px 0; }.watch-card-copy p { margin:8px 0; }
+.muted { color:#61645f; font-size:13px; }.service-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; padding:32px 0; }.service-grid article { padding:24px; background:#f7f6f2; }
+.link-list { display:flex; flex-wrap:wrap; gap:12px; }.link-list a { padding:7px 13px; border:1px solid var(--rule); font-size:13px; }.link-list [aria-current] { border-color:var(--gold); }
+.page-intro { padding:50px 0 28px; max-width:860px; }.editorial { max-width:880px; }.editorial h2 { margin-top:32px; }.editorial .service-grid { grid-template-columns:repeat(3,1fr); }.editorial details { padding:16px 0; border-bottom:1px solid var(--rule); }.editorial summary { cursor:pointer; font-weight:600; }
+.catalogue-tools { border-block:1px solid var(--rule); padding:24px 0; }.search-form { margin-top:20px; }.search-form label { font-size:13px; display:block; }.search-form>div { display:flex; gap:10px; margin-top:6px; }.storefront input,.storefront textarea { padding:10px 12px; border:1px solid #c9cbc6; max-width:100%; }.search-form input { width:320px; }
+.pagination { display:flex; justify-content:center; gap:28px; margin:40px 0; }.empty-state { padding:40px; background:#f8f8f5; }.breadcrumbs { padding:30px 0; font-size:13px; }.product-layout { display:grid; grid-template-columns:1.1fr 1fr; gap:60px; }.product-layout h1 { font-size:clamp(2rem,3vw,3rem); }.product-photo { aspect-ratio:1; border:1px solid var(--rule); display:grid; place-items:center; }.product-photo img { width:100%; height:100%; object-fit:contain; }.thumbnails { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0; }.thumbnails button { width:72px; height:72px; border:1px solid var(--rule); cursor:pointer; }.thumbnails [aria-pressed=true] { border:2px solid var(--gold); }.thumbnails img { width:100%; height:100%; object-fit:contain; }
+.availability { background:#f6f5f0; padding:18px; margin:20px 0; }.availability.sold { background:#eee; }.price { font-size:25px; }.price span { display:block; font-size:12px; color:#62655e; }.specs>div { display:grid; grid-template-columns:1fr 1.5fr; gap:15px; border-bottom:1px solid var(--rule); padding:10px 0; font-size:13px; }.specs dt { color:#656862; }.specs dd { overflow-wrap:anywhere; }.preserve-lines { white-space:pre-line; }.policy-links { display:flex; flex-wrap:wrap; gap:18px; font-size:12px; }
+.site-footer { border-top:1px solid var(--rule); background:#f7f6f2; display:grid; grid-template-columns:1fr 1fr; gap:35px; padding:50px 5%; font-size:13px; }.site-footer nav { display:flex; align-content:start; flex-wrap:wrap; gap:15px 25px; }.skip-link { position:absolute; left:-10000px; }.skip-link:focus { left:20px; top:10px; background:white; padding:10px; z-index:100; }.contact-form { display:grid; gap:16px; max-width:650px; }.contact-form label { display:grid; gap:5px; }.notice { margin:15px 0; padding:18px; border:1px solid #cbbd9d; background:#f8f4e9; }.form-placeholder { padding:24px; background:#f7f6f2; }
+@media(max-width:950px){.watch-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.product-layout{gap:25px;}.site-nav{gap:15px;}.service-grid{gap:12px;}.service-grid article{padding:18px;}}
+@media(max-width:640px){.site-main{padding:0 18px 40px;}.site-header{padding:20px 18px;}.site-nav{font-size:12px;}.hero{padding:50px 0;}.watch-grid{gap:12px;}.watch-card-copy{padding:12px;}.watch-card h2{font-size:17px;}.service-grid,.editorial .service-grid,.product-layout,.site-footer{grid-template-columns:1fr;}.section-title{align-items:start;}.section-title>a{font-size:12px;}.site-footer{padding:35px 20px;}.search-form input{min-width:0;}.product-layout h1{font-size:2rem;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important;}}

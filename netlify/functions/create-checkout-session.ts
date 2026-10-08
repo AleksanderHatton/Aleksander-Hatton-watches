@@ -1,132 +1,34 @@
 import Stripe from 'stripe';
-import { checkRateLimit, clampText, errorResponse, escapeHtml, getRequester, getServiceSupabase, isHoneypotTripped, isValidEmail, json, requireBody, sendEmail } from './_shared';
-
-export const handler = async (event: any) => {
-  if (event.httpMethod === 'OPTIONS') return json(200, { ok: true });
-  if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed.' });
-
-  try {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const siteUrl = process.env.SITE_URL || process.env.URL || process.env.DEPLOY_PRIME_URL;
-
-    if (!stripeKey) return json(500, { error: 'Missing STRIPE_SECRET_KEY.' });
-    if (!siteUrl) return json(500, { error: 'Missing SITE_URL.' });
-
-    checkRateLimit(event, 'checkout', 6);
-    const stripe = new Stripe(stripeKey);
-    const supabase = getServiceSupabase();
-    const requester = await getRequester(event, supabase);
-    const body = requireBody(event);
-    if (isHoneypotTripped(body)) return json(400, { error: 'Invalid request.' });
-
-    const watchId = body.watchId || body.watch_id;
-    if (!watchId) return json(400, { error: 'watchId is required.' });
-
-    const { data: watch, error: watchError } = await supabase
-      .from('watches')
-      .select('*')
-      .eq('id', watchId)
-      .single();
-
-    if (watchError || !watch) return json(404, { error: 'Watch not found.' });
-    if (watch.status !== 'Available') return json(409, { error: 'This watch is no longer available.' });
-
-    const amount = Number(watch.price || 0);
-    if (!amount || amount <= 0) return json(400, { error: 'Watch price is invalid.' });
-
-    const orderPayload = {
-      user_id: requester.user?.id || null,
-      watch_id: watch.id,
-      watch_details: {
-        brand: watch.brand,
-        model: watch.model,
-        price: amount,
-        reference: watch.reference || '',
-      },
-      client_name: clampText(body.clientName, 120),
-      client_email: clampText(String(body.clientEmail || '').toLowerCase(), 320),
-      client_phone: clampText(body.clientPhone, 40),
-      client_address: clampText(body.clientAddress, 300),
-      client_city: clampText(body.clientCity, 120),
-      client_postcode: clampText(body.clientPostcode, 20),
-      payment_status: 'Pending',
-      payment_method: 'Stripe Checkout',
-      amount,
-    };
-
-    if (!orderPayload.client_name || !orderPayload.client_phone) {
-      return json(400, { error: 'Client name, email and phone are required.' });
-    }
-    if (!isValidEmail(orderPayload.client_email)) {
-      return json(400, { error: 'A valid email address is required.' });
-    }
-
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert(orderPayload)
-      .select('*')
-      .single();
-
-    if (orderError) throw orderError;
-
-    const checkoutImage = [
-      ...(Array.isArray(watch.images) ? watch.images : []),
-      watch.image
-    ].find((image: any) => typeof image === 'string' && image.startsWith('http'));
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-      customer_email: orderPayload.client_email,
-      success_url: `${siteUrl}/?payment=success&order=${order.id}`,
-      cancel_url: `${siteUrl}/?payment=cancelled&watch=${watch.id}`,
-      metadata: {
-        order_id: order.id,
-        watch_id: watch.id,
-        user_id: requester.user?.id || '',
-      },
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: 'gbp',
-            unit_amount: Math.round(amount * 100),
-            product_data: {
-              name: `${watch.brand} ${watch.model}`,
-              description: watch.reference ? `Reference: ${watch.reference}` : undefined,
-              images: checkoutImage ? [checkoutImage] : undefined,
-            },
-          },
-        },
-      ],
-    });
-
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({ stripe_session_id: session.id })
-      .eq('id', order.id);
-
-    if (updateError) throw updateError;
-
-    await sendEmail({
-      subject: `Checkout started: ${watch.brand} ${watch.model}`,
-      html: `<h2>Checkout started</h2><p><b>Client:</b> ${escapeHtml(orderPayload.client_name)}</p><p><b>Email:</b> ${escapeHtml(orderPayload.client_email)}</p><p><b>Watch:</b> ${escapeHtml(watch.brand)} ${escapeHtml(watch.model)}</p><p><b>Amount:</b> £${amount.toLocaleString()}</p>`,
-      replyTo: orderPayload.client_email,
-    });
-
-    return json(200, {
-      url: session.url,
-      orderId: order.id,
-      order: {
-        id: order.id,
-        clientName: order.client_name,
-        clientEmail: order.client_email,
-        clientPhone: order.client_phone,
-        clientCity: order.client_city,
-        clientPostcode: order.client_postcode,
-      },
-    });
-  } catch (err: any) {
-    return errorResponse(err);
+import {randomBytes} from 'node:crypto';
+import {checkRateLimit,clampText,errorResponse,getRequester,getServiceSupabase,isHoneypotTripped,isValidEmail,json,requireBody} from './_shared';
+import {origin} from './_catalogue';
+export const handler=async(event:any)=>{
+ if(event.httpMethod==='OPTIONS')return json(200,{ok:true});if(event.httpMethod!=='POST')return json(405,{error:'Method not allowed.'});
+ let db:ReturnType<typeof getServiceSupabase>|undefined;let orderId:string|undefined;let stripe:Stripe|undefined;let session:Stripe.Checkout.Session|undefined;
+ try{
+  if(!process.env.STRIPE_SECRET_KEY)return json(503,{error:'Checkout is unavailable. Please contact us.'});
+  checkRateLimit(event,'checkout',6);db=getServiceSupabase();const requester=await getRequester(event,db);const body=requireBody(event);
+  if(isHoneypotTripped(body))return json(400,{error:'Invalid request.'});
+  if(!/^[a-f0-9-]{36}$/i.test(body.watchId||''))return json(400,{error:'A valid watch ID is required.'});
+  const details={user_id:requester.user?.id||null,client_name:clampText(body.clientName,120),client_email:clampText(body.clientEmail,320).toLowerCase(),client_phone:clampText(body.clientPhone,40),client_address:clampText(body.clientAddress,300),client_city:clampText(body.clientCity,120),client_postcode:clampText(body.clientPostcode,20)};
+  if(!isValidEmail(details.client_email)||!details.client_name||!details.client_phone||!details.client_address||!details.client_city||!details.client_postcode)return json(400,{error:'Please provide valid contact and delivery details.'});
+  const result=await db.rpc('reserve_watch_checkout',{p_watch:body.watchId,p_details:details});
+  if(result.error){if(/no longer available/i.test(result.error.message))return json(409,{error:'This watch is reserved or sold. Please refresh the listing.'});throw result.error;}
+  const{watch,order}=result.data;orderId=order.id;
+  stripe=new Stripe(process.env.STRIPE_SECRET_KEY);
+  const checkoutImage=[...(watch.images||[]),watch.image].find((x:any)=>typeof x==='string'&&/^https:\/\//.test(x));
+  const params:Stripe.Checkout.SessionCreateParams={mode:'payment',expires_at:Math.floor(Date.now()/1000)+30*60,customer_email:details.client_email,success_url:`${origin()}/account?payment=success`,cancel_url:`${origin()}/watch/${watch.id}?payment=cancelled`,metadata:{order_id:order.id,watch_id:watch.id},shipping_address_collection:{allowed_countries:['GB']},line_items:[{quantity:1,price_data:{currency:'gbp',unit_amount:order.amount*100,product_data:{name:`${watch.brand} ${watch.model}`,description:watch.reference?`Reference: ${watch.reference}`:undefined,images:checkoutImage?[checkoutImage]:undefined}}}]};
+  // A stable integration label identifies this checkout flow in the Stripe Dashboard.
+  params.integration_identifier='ahwatches_'+Array.from(randomBytes(8),b=>String.fromCharCode(97+b%26)).join('');
+  session=await stripe.checkout.sessions.create(params,{idempotencyKey:`watch-order-${order.id}`});
+  const{error}=await db.from('orders').update({stripe_session_id:session.id}).eq('id',order.id);if(error)throw error;
+  return json(200,{url:session.url,orderId:order.id});
+ }catch(e:any){
+  // An ambiguous Stripe network error must keep the hold: a payable session may
+  // exist. Expire a known session before releasing; never blindly restock it.
+  if(db&&orderId){let safeToRelease=!stripe; if(session&&stripe){try{await stripe.checkout.sessions.expire(session.id);safeToRelease=true;}catch{safeToRelease=false;}}else if(stripe){safeToRelease=['StripeInvalidRequestError','StripeAuthenticationError','StripePermissionError'].includes(e?.type);}
+   if(safeToRelease){const r=await db.rpc('release_watch_checkout',{p_order:orderId,p_session:session?.id||null});if(r.error)console.error('Reservation release failed',r.error.message);}else console.error('Checkout reservation needs reconciliation for order',orderId);
   }
+  return errorResponse(e);
+ }
 };

@@ -16,6 +16,7 @@ export function json(statusCode: number, body: unknown) {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, Stripe-Signature',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       Vary: 'Origin',
+      'Cache-Control': 'no-store',
     },
     body: JSON.stringify(body),
   };
@@ -163,13 +164,16 @@ export async function sendEmail(params: { subject: string; html: string; to?: st
   }
 
   const resend = new Resend(apiKey);
-  await resend.emails.send({
+  try {
+  const result = await resend.emails.send({
     from,
     to,
     subject: params.subject,
     html: params.html,
     replyTo: params.replyTo,
   });
+  if(result.error) console.error('Email notification failed:', result.error.message);
+  } catch (error) { console.error('Email notification failed:', error); }
 }
 
 export function toWatch(row: any) {
@@ -188,11 +192,20 @@ export function toWatch(row: any) {
     status: row.status || 'Available',
     description: row.description || '',
     createdAt: row.created_at || row.createdAt || '',
-    stripeLink: row.stripe_link || row.stripeLink || '',
+    updatedAt: row.updated_at || row.created_at || '',
+    soldAt: row.sold_at || '',
+    movement: row.movement || '', caseSize: row.case_size || '',
+    dialColour: row.dial_colour || '', material: row.material || '',
+    serviceNotes: row.service_notes || '', warrantyNotes: row.warranty_notes || '',
+    mpn: row.mpn || '', gtin: row.gtin || '',
   };
 }
 
 export function fromWatch(body: any) {
+  if (!clampText(body.brand,120) || !clampText(body.model,200)) throw new HttpError(400,'Brand and model are required.');
+  if (!Number.isSafeInteger(Number(body.price)) || Number(body.price)<=0) throw new HttpError(400,'Enter a positive whole-pound price.');
+  if (body.status && !['Available','Reserved','Sold'].includes(body.status)) throw new HttpError(400,'Invalid stock status.');
+  if (body.gtin && !/^(\d{8}|\d{12}|\d{13}|\d{14})$/.test(body.gtin)) throw new HttpError(400,'Use a verified GTIN of 8, 12, 13 or 14 digits, or leave blank.');
   const images = Array.isArray(body.images)
     ? body.images.filter((image: any) => typeof image === 'string' && image.trim().length > 0)
     : [];
@@ -211,7 +224,10 @@ export function fromWatch(body: any) {
     images: images.length > 0 ? images : (primaryImage ? [primaryImage] : []),
     status: body.status || 'Available',
     description: body.description || '',
-    stripe_link: body.stripeLink || body.stripe_link || '',
+    movement: clampText(body.movement,120), case_size: clampText(body.caseSize,100),
+    dial_colour: clampText(body.dialColour,100), material: clampText(body.material,200),
+    service_notes: clampText(body.serviceNotes,4000), warranty_notes: clampText(body.warrantyNotes,4000),
+    mpn: clampText(body.mpn,70), gtin: clampText(body.gtin,14),
   };
 }
 
@@ -261,8 +277,8 @@ export function fromValuation(body: any, userId?: string | null) {
     asking_price: body.askingPrice || '',
     additional_details: body.additionalDetails || '',
     photos: body.photos || {},
-    status: body.status || 'Pending Review',
-    admin_notes: body.adminNotes || '',
+    status: 'Pending Review',
+    admin_notes: '',
   };
 }
 
@@ -302,8 +318,8 @@ export function fromSourcing(body: any, userId?: string | null) {
     budget: body.budget || '',
     timeframe: body.timeframe || '',
     notes: body.notes || '',
-    status: body.status || 'Active Sourcing',
-    admin_notes: body.adminNotes || '',
+    status: 'Active Sourcing',
+    admin_notes: '',
   };
 }
 

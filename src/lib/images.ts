@@ -1,6 +1,6 @@
 import { Watch } from '../types';
 
-export const FALLBACK_WATCH_IMAGE = 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=800';
+export const FALLBACK_WATCH_IMAGE = '/watch-placeholder.svg';
 
 export function getWatchImages(watch: Pick<Watch, 'image' | 'images'>): string[] {
   const galleryImages = Array.isArray(watch.images)

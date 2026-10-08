@@ -14,6 +14,16 @@ export interface Watch {
   description: string;
   createdAt: string;
   stripeLink?: string;
+  updatedAt?: string;
+  soldAt?: string;
+  movement?: string;
+  caseSize?: string;
+  dialColour?: string;
+  material?: string;
+  serviceNotes?: string;
+  warrantyNotes?: string;
+  mpn?: string;
+  gtin?: string;
 }
 
 export interface ValuationRequest {

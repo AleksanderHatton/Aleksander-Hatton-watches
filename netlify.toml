@@ -5,7 +5,10 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@supabase/supabase-js", "stripe", "resend"]
+  external_node_modules = ["@supabase/supabase-js", "stripe", "resend", "react", "react-dom"]
+
+[functions.page]
+  included_files = ["dist/index.html"]
 
 [[redirects]]
   from = "/sitemap.xml"
@@ -19,14 +22,33 @@
   status = 200
 
 [[redirects]]
+  from = "/products.xml"
+  to = "/.netlify/functions/products-feed"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "/.netlify/functions/robots"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/page"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/.netlify/functions/page"
   status = 200
 
 # Security headers for every response.
 [[headers]]
   for = "/*"
   [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.stripe.com; frame-src https://*.stripe.com https://*.link.com; object-src 'none'; base-uri 'self'; form-action 'self' https://*.stripe.com; frame-ancestors 'none'"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"

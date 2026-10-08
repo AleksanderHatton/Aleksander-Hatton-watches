@@ -48,6 +48,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (watch.status !== 'Available') { setError('This watch is not available. Please refresh the listing.'); return; }
     setLoading(true);
     setError('');
 
@@ -94,7 +95,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
           <div>
             <div className="flex items-center gap-2 text-[10px] tracking-widest text-[#C5A880] font-mono uppercase mb-6">
               <ShoppingBag className="w-4 h-4" />
-              <span>Investment Summary</span>
+              <span>Your watch</span>
             </div>
             
             <div className="space-y-4">
@@ -326,7 +327,7 @@ export default function CheckoutModal({ watch, isOpen, onClose, onSuccess }: Che
                     <span className="text-zinc-950 font-mono text-right max-w-[200px] truncate">{successInfo.clientCity}, {successInfo.clientPostcode}</span>
                   </div>
                   <div className="flex justify-between text-zinc-650">
-                    <span>Escrow Amount</span>
+                    <span>Order amount</span>
                     <span className="text-[#C5A880] font-sans font-bold text-sm">£{watch.price.toLocaleString()}</span>
                   </div>
                 </div>

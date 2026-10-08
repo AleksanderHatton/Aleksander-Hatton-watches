@@ -17,5 +17,11 @@
     "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "src",
+    "netlify/functions",
+    "vite.config.ts",
+    "tests"
+  ]
 }

@@ -1,141 +1,31 @@
-# Aleksander Hatton Website
+# Aleksander Hatton Watches
 
-Production website for Aleksander Hatton Watches using:
+Vite / React storefront, Netlify server-rendered public pages and functions, Supabase inventory/accounts/storage, Stripe Checkout and Resend notifications.
 
-- Netlify for hosting and serverless API routes
-- Supabase Auth, Postgres and Storage
-- Stripe Checkout for payments
-- Resend for transactional email
+**Start with [docs/DEPLOYMENT_GOOGLE_SETUP.md](docs/DEPLOYMENT_GOOGLE_SETUP.md).** Run the additive database migration before deploying. That guide covers updating an existing site, the required Stripe webhook events, Search Console, Merchant Center and final business-policy checks.
 
-## 1. Install
+See [docs/CHANGES_AND_VALIDATION.md](docs/CHANGES_AND_VALIDATION.md) for the changes delivered, completed checks and remaining live checks.
 
-```bash
-npm install
+```sh
+npm ci
+npm run check
 ```
 
-## 2. Create or update Supabase
+`npm run check` runs TypeScript, catalogue/payment database tests and the Vite production build. Node 22+ is recommended. For local API-backed development, use Netlify CLI with `netlify dev` after building. A Vite-only preview does not serve backend functions.
 
-Open **Supabase Dashboard > SQL Editor**.
+Canonical source:
 
-For a new project, run:
+- `src/App.tsx`: browser interactions, existing account/admin components and enquiry forms
+- `src/components/Storefront.tsx`: shared public page layout, used by both server and browser
+- `src/shared/catalogue.ts`: routes, identity, metadata and product schema
+- `src/shared/content.ts`: guides, buying information and public policies
+- `netlify/functions/page.ts`: server HTML for public routes
+- `netlify/functions/_catalogue.ts`: public data queries and pagination
+- `netlify/functions/sitemap.ts`, `products-feed.ts`, `robots.ts`: Google discovery endpoints
+- `netlify/functions/create-checkout-session.ts`, `stripe-webhook.ts`, `reconcile-checkouts.ts`: reserved inventory and payment lifecycle
+- `supabase/google-search-upgrade.sql`: additive database upgrade and security corrections
+- `tests/`: synthetic data only; never import these fixtures into production
 
-```text
-supabase/schema.sql
-```
+Copy `.env.example` to a private local `.env` if needed. Set production credentials through Netlify configuration. Never commit service-role keys, Stripe secrets or email keys. The old top-level TSX/functions duplicates are compatibility exports; edit the canonical files above.
 
-For an existing project that already has the database tables, run this once as well:
-
-```text
-supabase/storage-setup.sql
-```
-
-That creates:
-
-- `watch-images` — public catalogue photography
-- `valuation-photos` — private customer photography
-
-Both buckets accept JPEG, PNG and WEBP files up to 6 MB after browser compression. Original files up to 12 MB are accepted by the browser uploader.
-
-The browser now compresses photos and uploads them directly to Supabase Storage using short-lived signed upload URLs. The Netlify function receives only small JSON records and storage paths, avoiding the previous `Request body too large` failure.
-
-## 3. Create your admin account
-
-Register through the website, then run:
-
-```sql
-update public.profiles
-set role = 'admin'
-where email = 'YOUR_EMAIL@example.com';
-```
-
-Only admin/dealer accounts can edit stock, see all customer submissions and use the dealer dashboard.
-
-## 4. Environment variables
-
-Copy `.env.example` to `.env` locally. Add the same variables in **Netlify > Site configuration > Environment variables**:
-
-```text
-VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-VITE_STRIPE_PUBLISHABLE_KEY
-STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET
-RESEND_API_KEY
-EMAIL_FROM
-ADMIN_EMAIL
-SITE_URL
-```
-
-Never expose `SUPABASE_SERVICE_ROLE_KEY` or `STRIPE_SECRET_KEY` in frontend code.
-
-## 5. Stripe setup
-
-Use Stripe test keys first. In **Stripe Developers > Webhooks**, add:
-
-```text
-https://YOUR_SITE.netlify.app/.netlify/functions/stripe-webhook
-```
-
-Listen for:
-
-```text
-checkout.session.completed
-```
-
-Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
-
-Payment flow:
-
-1. Customer starts checkout.
-2. The Netlify function creates a Stripe Checkout Session using the database price.
-3. Stripe takes payment.
-4. The webhook confirms payment.
-5. The order changes to `Paid` and the watch changes to `Sold`.
-
-## 6. Run locally
-
-Frontend only:
-
-```bash
-npm run dev
-```
-
-Frontend plus Netlify Functions:
-
-```bash
-npx netlify-cli dev
-```
-
-The app uses routes including:
-
-```text
-/api/stock
-/api/uploads/sign
-/api/valuations
-/api/sourcing
-/api/orders
-```
-
-Netlify rewrites these to `netlify/functions`.
-
-## 7. Deploy to Netlify
-
-Import the repository from GitHub and use:
-
-```text
-Build command: npm run build
-Publish directory: dist
-Functions directory: netlify/functions
-```
-
-Netlify should detect `netlify.toml` automatically.
-
-## Upload architecture
-
-- Catalogue and valuation images are resized and converted to efficient JPEGs in the browser.
-- Selected photos upload directly to Supabase in parallel for faster batches.
-- Catalogue images use public URLs.
-- Valuation photos stay private; the API returns temporary signed read URLs to authorised users.
-- Listing and valuation API bodies contain URLs or storage paths, never base64 image data.
+This archive supplies implementation code. No live deployment, database migration, payment transaction or Google account setup has been performed for you.
