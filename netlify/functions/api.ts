@@ -1,4 +1,7 @@
 import { allWatches } from './_catalogue';
+import { CONTACT_EMAIL } from '../../src/lib/contact';
+import { ebayRoutes } from './ebay/routes';
+import { linkInput, missingSetup, saveLink } from './ebay/sync';
 import {
   checkRateLimit,
   HttpError,
@@ -93,6 +96,7 @@ export const handler = async (event: any) => {
     const method = event.httpMethod;
     const route = getRoute(event);
     const [resource, id, sub] = route;
+    if (resource === 'ebay') return await ebayRoutes(event, route.slice(1), supabase, requester);
 
     if (resource === 'uploads' && id === 'sign' && method === 'POST') {
       const body = requireBody(event);
@@ -135,20 +139,39 @@ export const handler = async (event: any) => {
 
       if (method === 'POST') {
         const body = requireBody(event);
+        if (body.ebay) linkInput(body.ebay);
         const { data, error } = await supabase.from('watches').insert(fromWatch(body)).select('*').single();
         if (error) throw error;
         await createNotification(supabase, 'New stock added', `${data.brand} ${data.model} added to catalog`, 'stock');
-        return json(201, toWatch(data));
+        let ebay = body.ebay, ebayWarning = '';
+        try {
+          if (!ebay) {
+            const s = await supabase.from('ebay_settings').select('*').eq('id', 1).maybeSingle();
+            if (s.error && !missingSetup(s.error)) throw s.error;
+            if (s.data?.auto_list_new) ebay = { enabled: true, price: Math.round(data.price * (1 + Number(s.data.markup_percent) / 100) * 100) / 100, title: '', aspects: {} };
+          }
+          if (ebay) await saveLink(supabase, data.id, ebay);
+        } catch (e) { ebayWarning = e instanceof HttpError ? e.message : 'The watch was saved, but its eBay settings could not be saved. Reopen the watch to retry.'; }
+        return json(201, { ...toWatch(data), ebayWarning });
       }
 
       if (method === 'PUT' && id) {
         const body = requireBody(event);
+        if (body.ebay) linkInput(body.ebay);
         const { data, error } = await supabase.from('watches').update(fromWatch(body)).eq('id', id).select('*').single();
-        if (error) throw error;
-        return json(200, toWatch(data));
+        if (error) {
+          if (/synchronisation is in progress/i.test(error.message)) throw new HttpError(409, 'This watch is being synchronised with eBay. Try saving again shortly.');
+          throw error;
+        }
+        let ebayWarning = '';
+        if (body.ebay) { try { await saveLink(supabase, data.id, body.ebay); } catch(e) { ebayWarning = e instanceof HttpError ? e.message : 'The watch was saved, but its eBay settings need attention. Reopen the watch to retry.'; } }
+        return json(200, { ...toWatch(data), ebayWarning });
       }
 
       if (method === 'DELETE' && id) {
+        const linked = await supabase.from('ebay_listings').select('watch_id').eq('watch_id', id).maybeSingle();
+        if (linked.error && !missingSetup(linked.error)) throw linked.error;
+        if (linked.data) return json(409, { error: 'This watch has an eBay record. Keep it for stock tracking and use Reserved or Sold instead of deleting it.' });
         const {data: watch,error: lookupError} = await supabase.from('watches').select('status,reserved_order_id').eq('id',id).maybeSingle();
         if(lookupError) throw lookupError;
         if(!watch) return json(404,{error:'Watch not found.'});
@@ -369,7 +392,7 @@ export const handler = async (event: any) => {
         payoutBankConnected: true,
         payoutAccountType: 'Stripe payouts to connected business bank',
         merchantStatus: 'Active after Stripe setup',
-        payoutRecipientEmail: process.env.ADMIN_EMAIL || 'inquiries@ahwatches.com',
+        payoutRecipientEmail: process.env.ADMIN_EMAIL || CONTACT_EMAIL,
       });
     }
 

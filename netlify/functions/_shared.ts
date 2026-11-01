@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { MAX_STOCK_IMAGES } from '../../src/shared/watch-options';
+import { CONTACT_EMAIL } from '../../src/lib/contact';
 
 // Only allow the live site (and localhost during dev) to call these functions.
 // Set SITE_URL in your environment. Falls back to '*' only if nothing is configured.
@@ -156,7 +158,7 @@ export function checkRateLimit(event: any, key: string, limit = 8, windowMs = 60
 export async function sendEmail(params: { subject: string; html: string; to?: string; replyTo?: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || 'Aleksander Hatton <onboarding@resend.dev>';
-  const to = params.to || process.env.ADMIN_EMAIL || 'inquiries@ahwatches.com';
+  const to = params.to || process.env.ADMIN_EMAIL || CONTACT_EMAIL;
 
   if (!apiKey || !to) {
     console.warn('Email skipped. Missing RESEND_API_KEY.');
@@ -210,6 +212,7 @@ export function fromWatch(body: any) {
     ? body.images.filter((image: any) => typeof image === 'string' && image.trim().length > 0)
     : [];
   const primaryImage = images[0] || body.image || '';
+  if (images.length > MAX_STOCK_IMAGES) throw new HttpError(400, `A watch can have up to ${MAX_STOCK_IMAGES} photographs.`);
 
   return {
     brand: body.brand,

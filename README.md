@@ -29,3 +29,15 @@ Canonical source:
 Copy `.env.example` to a private local `.env` if needed. Set production credentials through Netlify configuration. Never commit service-role keys, Stripe secrets or email keys. The old top-level TSX/functions duplicates are compatibility exports; edit the canonical files above.
 
 This archive supplies implementation code. No live deployment, database migration, payment transaction or Google account setup has been performed for you.
+# Website and eBay update
+
+This version allows 12 watch photographs and offers Fair, Good, Great and
+Excellent in the admin condition selector. Existing labels are preserved.
+
+**Before deploying:** follow [docs/EBAY_SETUP.md](docs/EBAY_SETUP.md), starting
+with the additive SQL upgrade. eBay publishing starts disabled and needs a
+separate seller authorisation. No credentials are included in this ZIP.
+
+The eBay backend runs on Netlify alongside the shop. Your n8n watch finder
+does not need changes. See the setup guide for stock handling and limitations.
+

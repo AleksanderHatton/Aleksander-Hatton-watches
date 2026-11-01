@@ -7,16 +7,24 @@ import { Watch, ValuationRequest, SourcingRequest, Order, ContactSubmission } fr
 import { apiFetch } from '../lib/api';
 import { FALLBACK_WATCH_IMAGE, getWatchCoverImage } from '../lib/images';
 import { migrateDataImage, uploadImageFile } from '../lib/uploads';
+import { MAX_STOCK_IMAGES, WATCH_CONDITIONS } from '../shared/watch-options';
+import EbaySettings, { EbayData, EbayWatchFields, emptyEbayForm, ebayPayload, formFromListing, ebayItemUrl } from './EbaySettings';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-const MAX_STOCK_IMAGES = 8;
 const MAX_STOCK_UPLOAD_MB = 12;
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [stock, setStock] = useState<Watch[]>([]);
+  const [ebayData, setEbayData] = useState<EbayData>({ ready: false, configured: false, listings: [] });
+  const [ebayForm, setEbayForm] = useState(emptyEbayForm);
+  const [ebayBusy, setEbayBusy] = useState('');
+  const refreshEbay = async () => {
+    const next = await apiFetch<EbayData>('/api/ebay'); setEbayData(next);
+    if (!isEditing && !stockForm.brand) setEbayForm(p => ({ ...p, enabled: Boolean(next.settings?.auto_list_new) }));
+  };
   const [valuations, setValuations] = useState<ValuationRequest[]>([]);
   const [sourcing, setSourcing] = useState<SourcingRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -28,11 +36,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     totalSales: 0,
     totalValuationsCount: 0,
     activeSourcingCount: 0,
-    currentCatalogCount: 0,
-    payoutBankConnected: true,
-    payoutAccountType: 'Business Swift/IBAN Transfer',
-    merchantStatus: 'Active & Verified',
-    payoutRecipientEmail: 'inquiries@ahwatches.com'
+    currentCatalogCount: 0
   });
 
   const [activeTab, setActiveTab] = useState<'stock' | 'valuations' | 'sourcing' | 'orders' | 'messages' | 'emails'>('stock');
@@ -84,17 +88,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [stockData, valuationData, sourcingData, orderData, contactData, notificationData, overviewData] = await Promise.all([
+      const [stockData, valuationData, sourcingData, orderData, contactData, notificationData, overviewData, ebay] = await Promise.all([
         apiFetch<Watch[]>('/api/stock'),
         apiFetch<ValuationRequest[]>('/api/valuations'),
         apiFetch<SourcingRequest[]>('/api/sourcing'),
         apiFetch<Order[]>('/api/orders'),
         apiFetch<ContactSubmission[]>('/api/contacts'),
         apiFetch<any[]>('/api/notifications'),
-        apiFetch<any>('/api/admin/overview')
+        apiFetch<any>('/api/admin/overview'),
+        apiFetch<EbayData>('/api/ebay').catch((e) => ({ ready: false, configured: false, listings: [], error: e.message } as EbayData))
       ]);
 
       setStock(stockData);
+      setEbayData(ebay);
+      if (!isEditing && !stockForm.brand) setEbayForm(p => ({ ...p, enabled: Boolean(ebay.settings?.auto_list_new) }));
       setValuations(valuationData);
       setSourcing(sourcingData);
       setValuationNoteDrafts(Object.fromEntries(valuationData.map(item => [item.id, item.adminNotes || ''])));
@@ -129,6 +136,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const processUploadedFiles = async (fileList: FileList | File[]) => {
+    if (uploadingImages) return;
     setErrorStock('');
     const files = Array.from(fileList);
     if (!files.length) return;
@@ -155,13 +163,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
     setUploadingImages(true);
     try {
-      const uploaded = await Promise.all(
-        selectedFiles.map(file => uploadImageFile(file, 'watch', {
+      const uploaded: { value: string; previewUrl: string }[] = [];
+      // Bound decoding/canvas memory when twelve high-resolution originals are
+      // selected on a phone; preserve the user's image order across batches.
+      for (let offset = 0; offset < selectedFiles.length; offset += 3) {
+        uploaded.push(...await Promise.all(selectedFiles.slice(offset, offset + 3).map(file => uploadImageFile(file, 'watch', {
           maxDimension: 1600,
           quality: 0.84,
           square: true,
-        }))
-      );
+        }))));
+      }
       uploaded.forEach(item => URL.revokeObjectURL(item.previewUrl));
       const uploadedImages = uploaded.map(item => item.value);
 
@@ -303,17 +314,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...stockForm,
         price: priceNum,
         image: imagesToSubmit[0],
-        images: imagesToSubmit
+        images: imagesToSubmit,
+        ...(ebayData.ready ? { ebay: ebayPayload(ebayForm, Math.round(priceNum * (1 + Number(ebayData.settings?.markup_percent || 0) / 100) * 100) / 100) } : {})
       };
       const url = isEditing ? `/api/stock/${editingId}` : '/api/stock';
       const method = isEditing ? 'PUT' : 'POST';
 
-      await apiFetch(url, {
+      const saved = await apiFetch<Watch & { ebayWarning?: string }>(url, {
         method,
         body: JSON.stringify(payload)
       });
 
-      showMsg(isEditing ? 'Watch specs updated successfully.' : 'New timepiece added to live catalog.', 'success');
+      showMsg(saved.ebayWarning ? `Watch saved. ${saved.ebayWarning}` : isEditing ? 'Watch updated. Check its eBay status below if linked.' : 'Watch added to the website. Enabled eBay listings are queued for checking and publication.', saved.ebayWarning ? 'error' : 'success');
       resetStockForm();
       await fetchData();
     } catch (err: any) {
@@ -324,6 +336,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const startEdit = (watch: Watch) => {
+    setEbayForm(formFromListing(ebayData.listings.find(l => l.watch_id === watch.id)));
     setIsEditing(true);
     setEditingId(watch.id);
     setStockForm({
@@ -362,6 +375,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const resetStockForm = () => {
+    setEbayForm({ ...emptyEbayForm(), enabled: Boolean(ebayData.settings?.auto_list_new) });
     setIsEditing(false);
     setEditingId('');
     setStockForm({
@@ -386,6 +400,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     mpn: '',
     gtin: ''
     });
+  };
+
+  const runEbayWatchAction = async (watchId: string, action: 'verify' | 'sync') => {
+    setEbayBusy(watchId);
+    try {
+      const result = await apiFetch<any>(`/api/ebay/listings/${watchId}/${action}`, { method: 'POST' });
+      await refreshEbay();
+      showMsg(action === 'verify' ? `eBay check passed. No listing was published. ${result.fees?.length ? 'Estimated listing fees: ' + result.fees.map((f: any) => `${f.name} £${Number(f.amount).toFixed(2)}`).join(', ') + '. ' : ''}${result.warnings?.join(' | ') || ''}` : 'eBay stock check completed.', 'success');
+    } catch (e) { showMsg(e instanceof Error ? e.message : 'eBay needs attention.', 'error'); await refreshEbay().catch(() => {}); }
+    finally { setEbayBusy(''); }
   };
 
   // State modification triggers for Requests (Update status & notes)
@@ -438,7 +462,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </span>
           </div>
           <p className="text-zinc-700 text-xs mt-1 font-mono">
-            Merchant Operator: <span className="text-zinc-700">inquiries@ahwatches.com</span> | Registered Base: Sheffield, UK
+            Watch inventory, enquiries and website orders
           </p>
         </div>
 
@@ -505,20 +529,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* SECURE PAYOUTS TO BANK ACCOUNT DETAILS (Satisfying section 7: "payment payouts to my bank account") */}
+        {/* Payment account details remain in the payment provider's dashboard. */}
         <div className="bg-white border border-zinc-200 p-5 rounded-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Protected Payout lines</span>
-            <Globe className="w-5 h-5 text-emerald-500" />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-700">Payment management</span>
+            <Globe className="w-5 h-5 text-zinc-500" />
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase font-bold text-emerald-700">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Sheffield Bank Payout Direct</span>
-            </div>
             <p className="text-[10.5px] text-zinc-700 leading-normal font-sans">
-              Linked Account: <span className="font-mono text-[9px] text-[#C5A880]">UK HSBC BUSINESS ACCT ending 7824</span>. Daily payouts configured under strict security protocol.
+              Manage payout accounts and check transfer schedules in your Stripe Dashboard.
             </p>
+            <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="text-xs underline">Open Stripe Dashboard</a>
           </div>
         </div>
 
@@ -564,6 +585,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* VIEW 1: INVENTORY MANAGER */}
         {activeTab === 'stock' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-3"><EbaySettings data={ebayData} refresh={refreshEbay} /></div>
             
             {/* Left: Interactive Input Form (Add or Edit) */}
             <div className="bg-white border border-zinc-200 p-6 space-y-6 lg:sticky lg:top-24 max-h-[85vh] overflow-y-auto">
@@ -671,10 +693,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       className="w-full bg-white border border-zinc-200 rounded-sm px-1.5 py-2 text-zinc-950 focus:outline-none focus:border-[#C5A880] focus:bg-white text-[10px]"
                     >
                       <option value="">Select condition</option>
-                      <option value="Unworn">Unworn</option>
-                      <option value="Mint">Mint</option>
-                      <option value="Excellent">Excellent</option>
-                      <option value="Very Good">Very Good</option>
+                      {stockForm.condition && !(WATCH_CONDITIONS as readonly string[]).includes(stockForm.condition) && <option value={stockForm.condition}>{stockForm.condition} (existing label)</option>}
+                      {WATCH_CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
@@ -840,6 +860,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <p className="text-xs">Use <b>Sold</b> to retain the listing in the archive. Each physical watch needs its own record, even when its reference matches another watch.</p>
                 </fieldset>
 
+                <EbayWatchFields data={ebayData} form={ebayForm} setForm={setEbayForm} suggested={Math.round(Number(stockForm.price || 0) * (1 + Number(ebayData.settings?.markup_percent || 0) / 100) * 100) / 100} />
+
                 <div className="flex gap-2.5 pt-2">
                   {isEditing && (
                     <button
@@ -900,6 +922,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         <p className="text-[10px] text-zinc-700 font-mono mt-0.5">
                           Ref: {watch.reference} | Year: {watch.year} | £{watch.price.toLocaleString()}
                         </p>
+                        {ebayData.listings.filter(l => l.watch_id === watch.id).map(link => <div key={link.watch_id} className="text-xs mt-2 space-y-1 max-w-md">
+                          <p>eBay: <b>{link.state}</b> · £{Number(link.price).toFixed(2)} {link.item_id && <a className="underline" href={ebayItemUrl(link.item_id, ebayData.environment)} target="_blank" rel="noopener noreferrer">View listing</a>}</p>
+                          <p className="text-zinc-500">Last checked: {link.last_synced_at ? new Date(link.last_synced_at).toLocaleString('en-GB') : 'Waiting for worker'}</p>
+                          {link.last_error && <p role="status" className="text-red-800 whitespace-pre-wrap">{link.last_error}</p>}
+                          {link.warnings?.map((warning, i) => <p key={i} className="text-amber-900">{warning}</p>)}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <button type="button" disabled={ebayBusy === watch.id || !ebayData.connection} onClick={() => runEbayWatchAction(watch.id, 'verify')} className="underline disabled:opacity-50">Check eBay requirements</button>
+                            <button type="button" disabled={ebayBusy === watch.id || !ebayData.connection} onClick={() => runEbayWatchAction(watch.id, 'sync')} className="underline disabled:opacity-50">{ebayBusy === watch.id ? 'Checking…' : 'Sync eBay now'}</button>
+                          </div>
+                        </div>)}
                       </div>
                     </div>
 
