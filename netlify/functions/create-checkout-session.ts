@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import {randomBytes} from 'node:crypto';
 import {checkRateLimit,clampText,errorResponse,getRequester,getServiceSupabase,isHoneypotTripped,isValidEmail,json,requireBody} from './_shared';
 import {origin} from './_catalogue';
+import {pauseForCheckout} from './ebay/sync';
 export const handler=async(event:any)=>{
  if(event.httpMethod==='OPTIONS')return json(200,{ok:true});if(event.httpMethod!=='POST')return json(405,{error:'Method not allowed.'});
  let db:ReturnType<typeof getServiceSupabase>|undefined;let orderId:string|undefined;let stripe:Stripe|undefined;let session:Stripe.Checkout.Session|undefined;
@@ -15,6 +16,7 @@ export const handler=async(event:any)=>{
   const result=await db.rpc('reserve_watch_checkout',{p_watch:body.watchId,p_details:details});
   if(result.error){if(/no longer available/i.test(result.error.message))return json(409,{error:'This watch is reserved or sold. Please refresh the listing.'});throw result.error;}
   const{watch,order}=result.data;orderId=order.id;
+  await pauseForCheckout(db,watch.id);
   stripe=new Stripe(process.env.STRIPE_SECRET_KEY);
   const checkoutImage=[...(watch.images||[]),watch.image].find((x:any)=>typeof x==='string'&&/^https:\/\//.test(x));
   const params:Stripe.Checkout.SessionCreateParams={mode:'payment',expires_at:Math.floor(Date.now()/1000)+30*60,customer_email:details.client_email,success_url:`${origin()}/account?payment=success`,cancel_url:`${origin()}/watch/${watch.id}?payment=cancelled`,metadata:{order_id:order.id,watch_id:watch.id},shipping_address_collection:{allowed_countries:['GB']},line_items:[{quantity:1,price_data:{currency:'gbp',unit_amount:order.amount*100,product_data:{name:`${watch.brand} ${watch.model}`,description:watch.reference?`Reference: ${watch.reference}`:undefined,images:checkoutImage?[checkoutImage]:undefined}}}]};

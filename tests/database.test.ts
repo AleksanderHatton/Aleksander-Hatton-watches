@@ -8,6 +8,7 @@ test('migration and payment lifecycle on a real PostgreSQL engine',async()=>{
  await db.exec(`create role anon; create role authenticated; create role service_role;create schema auth;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb);create function auth.uid() returns uuid language sql stable as $$select null::uuid$$;create function auth.role() returns text language sql stable as $$select current_setting('request.jwt.claim.role',true)$$;`);
  const schema=(await readFile('supabase/schema.sql','utf8')).replace('create extension if not exists pgcrypto;','');await db.exec(schema);
  const migration=await readFile('supabase/google-search-upgrade.sql','utf8');await db.exec(migration);await db.exec(migration);
+ const ebayUpgrade=await readFile('supabase/ebay-integration.sql','utf8');await db.exec(ebayUpgrade);await db.exec(ebayUpgrade);
  const stock=await db.query<{id:string}>("insert into watches(brand,model,price) values('TAG Heuer','Aquaracer',795) returning id");const id=stock.rows[0].id;
  const reserve=()=>db.query<{r:any}>("select reserve_watch_checkout($1,$2) r",[id,JSON.stringify({client_name:'Test Buyer',client_email:'test@example.com'})]);
  const a=await reserve();const order=a.rows[0].r.order.id;
