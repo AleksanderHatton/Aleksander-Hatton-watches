@@ -1,8 +1,8 @@
 # Website update and eBay selling setup
 
-The code is prepared, but it is not a live eBay connection yet. You must deploy
-it, authorise your seller account and complete the first listing check. No real
-eBay listing, order, credential or production database was changed during development.
+Before first use, deploy the code, apply the database upgrade, authorise your
+seller account and complete the first listing check. Automated checks use
+synthetic eBay responses and do not publish real listings or place real orders.
 
 ## What changed
 
@@ -62,7 +62,7 @@ them to Functions and Production where the UI offers those choices, then redeplo
 
 | Variable | Value |
 | --- | --- |
-| `SITE_URL` | `https://www.ahwatches.com` (the exact public origin you use) |
+| `SITE_URL` | `https://ahwatches.com` (the exact public origin you use) |
 | `EBAY_ENVIRONMENT` | `production` |
 | `EBAY_CLIENT_ID` | Your existing Production App ID / Client ID |
 | `EBAY_CLIENT_SECRET` | Your existing Production Cert ID / Client Secret |
@@ -85,7 +85,7 @@ Choose OAuth rather than the older Auth'n'Auth method. Set the accepted callback
 URL, and the declined callback URL if requested, to:
 
 ```text
-https://www.ahwatches.com/api/ebay/callback
+https://ahwatches.com/api/ebay/callback
 ```
 
 Use the same exact origin as `SITE_URL`. Copy eBay's generated **RuName**, not the
