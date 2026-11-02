@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
-import { accessToken, decrypt, encrypt, listingXml, parseTradingResponse, readRemote, verificationXml } from '../netlify/functions/ebay/client';
+import { accessToken, decrypt, encrypt, listingXml, parseTradingResponse, readRemote, revisionXml, verificationXml } from '../netlify/functions/ebay/client';
 import { fromWatch } from '../netlify/functions/_shared';
-import { pauseForCheckout, pollSales, quantityXml, runSync, syncWatch } from '../netlify/functions/ebay/sync';
+import { linkInput, pauseForCheckout, pollSales, quantityXml, runSync, saveLink, syncWatch } from '../netlify/functions/ebay/sync';
 import { ebayRoutes } from '../netlify/functions/ebay/routes';
 
 process.env.EBAY_CLIENT_ID = 'synthetic-client';
@@ -147,6 +147,76 @@ test('scheduled checks retain Seller Hub content edits and manual stock pauses',
   }
 });
 
+test('new listings use each watch postage policy in verification and publication', async () => {
+  // The policies represent buyer-paid £5 and £20 services configured on eBay.
+  for (const policyId of ['500', '2000']) {
+    const calls: string[] = [];
+    await withFetch(async (_url, init) => {
+      const call = new Headers(init?.headers).get('X-EBAY-API-CALL-NAME')!;
+      if (call === 'GetUserPreferences') return envelope(call, '<OutOfStockControlPreference>true</OutOfStockControlPreference>');
+      if (['VerifyAddFixedPriceItem', 'AddFixedPriceItem'].includes(call)) {
+        calls.push(call);
+        const body = String(init?.body);
+        assert.match(body, new RegExp(`<ShippingProfileID>${policyId}</ShippingProfileID>`));
+        assert.doesNotMatch(body, /<ShippingProfileID>2<\/ShippingProfileID>/);
+        return envelope(call, call === 'AddFixedPriceItem' ? `<ItemID>${itemId}</ItemID>` : '');
+      }
+      if (call === 'GetItem') return envelope(call, remoteXml(1));
+      throw Error(`Unexpected ${call}`);
+    }, async () => {
+      const db = fakeDb({ link: { item_id: null, state: 'queued', creation_attempted: false, shipping_policy_id: policyId } });
+      await syncWatch(db, id);
+      assert.equal(db.data.ebay_listings[0].state, 'live');
+      assert.equal(db.data.ebay_settings[0].shipping_policy_id, '2');
+    });
+    assert.deepEqual(calls, ['VerifyAddFixedPriceItem', 'AddFixedPriceItem']);
+  }
+  assert.match(listingXml(watch, { ...link, shipping_policy_id: null }, settings), /<ShippingProfileID>2<\/ShippingProfileID>/);
+});
+
+test('content revisions retain remote policies and per-listing postage overrides', async () => {
+  const profiles = '<SellerProfiles><SellerPaymentProfile><PaymentProfileID>71</PaymentProfileID></SellerPaymentProfile><SellerShippingProfile><ShippingProfileID>72</ShippingProfileID></SellerShippingProfile><SellerReturnProfile><ReturnProfileID>73</ReturnProfileID></SellerReturnProfile></SellerProfiles>';
+  const overrides = '<ShippingServiceCostOverrideList><ShippingServiceCostOverride><ShippingServicePriority>1</ShippingServicePriority><ShippingServiceType>Domestic</ShippingServiceType><ShippingServiceCost currencyID="GBP">20.00</ShippingServiceCost><ShippingServiceAdditionalCost currencyID="GBP">0.00</ShippingServiceAdditionalCost></ShippingServiceCostOverride></ShippingServiceCostOverrideList>';
+  let revised = false;
+  await withFetch(async (_url, init) => {
+    const call = new Headers(init?.headers).get('X-EBAY-API-CALL-NAME')!;
+    if (call === 'GetItem') return envelope(call, remoteXml(1).replace('</Item>', `${profiles}${overrides}</Item>`));
+    assert.equal(call, 'ReviseFixedPriceItem');
+    const body = String(init?.body);
+    assert.match(body, /<ShippingProfileID>72<\/ShippingProfileID>/);
+    assert.match(body, /<PaymentProfileID>71<\/PaymentProfileID>/);
+    assert.match(body, /<ReturnProfileID>73<\/ReturnProfileID>/);
+    assert.match(body, /<ShippingServiceCost currencyID="GBP">20.00<\/ShippingServiceCost>/);
+    assert.doesNotMatch(body, /<ShippingProfileID>2<\/ShippingProfileID>|<ShippingProfileID>999<\/ShippingProfileID>|<ShippingDetails>|<UUID>|<InventoryTrackingMethod>|<Quantity>/);
+    revised = true;
+    return envelope(call);
+  }, async () => { await syncWatch(fakeDb({ link: { needs_revision: true, shipping_policy_id: '999' } }), id); });
+  assert.equal(revised, true);
+});
+
+test('legacy eBay listings retain postage without being switched to business policies', () => {
+  const remote = parseTradingResponse(`<GetItemResponse><Ack>Success</Ack>${remoteXml(1).replace('</Item>', '<ShippingDetails><ShippingServiceOptions><ShippingService>UK_OtherCourier</ShippingService><ShippingServiceCost currencyID="GBP">5.00</ShippingServiceCost></ShippingServiceOptions></ShippingDetails></Item>')}</GetItemResponse>`, 'GetItem').Item;
+  const body = revisionXml(watch, link, { ...settings, shipping_policy_id: '' }, remote);
+  assert.match(body, new RegExp(`<ItemID>${itemId}</ItemID>`));
+  assert.doesNotMatch(body, /<SellerProfiles>|<ShippingDetails>|<ShippingServiceCostOverrideList>/);
+  assert.throws(() => revisionXml(watch, link, settings, { ...remote, SellerProfiles: { SellerShippingProfile: { ShippingProfileID: '2' } } }), /confirm all existing/);
+});
+
+test('per-watch postage policy survives API saves and older clients; invalid IDs fail', async () => {
+  const payload = { enabled: true, price: 650, title: '', aspects: {}, existingItemId: itemId, shippingPolicyId: '2000' };
+  assert.equal(linkInput(payload).shipping_policy_id, '2000');
+  const db = fakeDb();
+  await saveLink(db, id, payload);
+  assert.equal(db.data.ebay_listings[0].shipping_policy_id, '2000');
+  const { shippingPolicyId: _removed, ...oldPayload } = payload;
+  await saveLink(db, id, oldPayload);
+  assert.equal(db.data.ebay_listings[0].shipping_policy_id, '2000');
+  assert.throws(() => linkInput({ ...payload, shippingPolicyId: '£20' }), /numeric eBay postage policy/);
+  assert.throws(() => linkInput({ ...payload, shippingPolicyId: 'https://example.com' }), /numeric eBay postage policy/);
+  await saveLink(db, id, { ...payload, shippingPolicyId: '' });
+  assert.equal(db.data.ebay_listings[0].shipping_policy_id, null);
+});
+
 test('forged OAuth callbacks and non-admin callers are rejected before database access', async () => {
   const noDb = { from() { throw Error('Database must not be reached'); } };
   const r = await ebayRoutes({ httpMethod: 'GET' }, [], noDb, { isAdmin: false });
@@ -201,6 +271,8 @@ test('database upgrade, leases, stock collisions and private grants on PostgreSQ
     const upgrade = await readFile('supabase/ebay-integration.sql', 'utf8'); await db.exec(upgrade); await db.exec(upgrade);
     await db.query("insert into watches(id,brand,model,price) values($1,'TAG Heuer','Aquaracer',600)", [id]);
     await db.query("insert into ebay_listings(watch_id,sku,create_uuid,environment,price,item_id) values($1,'unique-sku','unique-uuid','sandbox',650,$2)", [id, itemId]);
+    await db.query("update ebay_listings set shipping_policy_id='2000' where watch_id=$1", [id]);
+    await assert.rejects(db.query("update ebay_listings set shipping_policy_id='£20' where watch_id=$1", [id]), /check constraint/);
     const lease = '22222222-2222-4222-8222-222222222222';
     const claim = await db.query<{ r: any }>('select claim_ebay_listing($1,$2) r', [id, lease]); assert(claim.rows[0].r);
     const second = await db.query<{ r: any }>('select claim_ebay_listing($1,$2) r', [id, lease]); assert.equal(second.rows[0].r, null);
@@ -223,3 +295,4 @@ test('database upgrade, leases, stock collisions and private grants on PostgreSQ
     assert.equal(permission.rows[0].t, false); assert.equal(permission.rows[0].f, false);
   } finally { await db.close(); }
 });
+

@@ -1,8 +1,8 @@
 # Website update and eBay selling setup
 
-The code is prepared, but it is not a live eBay connection yet. You must deploy
-it, authorise your seller account and complete the first listing check. No real
-eBay listing, order, credential or production database was changed during development.
+Before first use, deploy the code, apply the database upgrade, authorise your
+seller account and complete the first listing check. Automated checks use
+synthetic eBay responses and do not publish real listings or place real orders.
 
 ## What changed
 
@@ -62,7 +62,7 @@ them to Functions and Production where the UI offers those choices, then redeplo
 
 | Variable | Value |
 | --- | --- |
-| `SITE_URL` | `https://www.ahwatches.com` (the exact public origin you use) |
+| `SITE_URL` | `https://ahwatches.com` (the exact public origin you use) |
 | `EBAY_ENVIRONMENT` | `production` |
 | `EBAY_CLIENT_ID` | Your existing Production App ID / Client ID |
 | `EBAY_CLIENT_SECRET` | Your existing Production Cert ID / Client Secret |
@@ -85,7 +85,7 @@ Choose OAuth rather than the older Auth'n'Auth method. Set the accepted callback
 URL, and the declined callback URL if requested, to:
 
 ```text
-https://www.ahwatches.com/api/ebay/callback
+https://ahwatches.com/api/ebay/callback
 ```
 
 Use the same exact origin as `SITE_URL`. Copy eBay's generated **RuName**, not the
@@ -107,6 +107,13 @@ token unchanged. This is a separate seller sign-in callback.
    IDs, plus its dispatch location. Check every value before saving.
 5. Alternatively, enter your three existing business policy IDs manually. If your
    seller has no business policies yet, set those up in Seller Hub first.
+   The postage policy here is a default for **new** listings. You can create
+   separate eBay policies with different delivery services and buyer-paid charges
+   (for example, £5 delivery and £20 insured delivery). When adding a watch, enter
+   the appropriate numeric ID in **Postage policy ID for this watch**. A blank
+   value uses the default. The website does not quote courier or insurance costs.
+   Once a listing exists, edit its postage in eBay: website content updates retain
+   its existing payment, postage and returns policies and postage-cost overrides.
 6. Enter your **actual dispatch** town and postcode, not a virtual registered-office
    address that does not dispatch the watches. Save the eBay defaults.
 7. In eBay's **Selling preferences**, enable **Out-of-stock control** yourself.
@@ -124,6 +131,9 @@ seller and environment while linked listings exist.
 1. Start with one complete, accurately described watch. Upload its actual photos,
    select its condition and disclose wear, repairs and known faults.
 2. Tick **Also list on eBay**. Set the separate eBay price and verified specifics.
+   For a new listing, choose its postage policy ID if it needs a different
+   buyer-paid charge or delivery service from the default. Check the actual
+   delivery charge in eBay before enabling automated publication for other stock.
    If the generated brand/model/reference title would exceed 80 characters, enter
    a shorter eBay title. The code reports an error instead of truncating it.
 3. **If this exact watch is already on eBay, enter that existing item ID.** It must
@@ -191,8 +201,11 @@ until reconciliation detects it.
 - Trading API listings remain in the traditional listing model. They are not
   migrated into the Inventory API model that restricts editing to that API.
 - Scheduled stock checks do not overwrite Seller Hub titles/descriptions/prices.
-  **Saving an enrolled website watch can overwrite those fields, photos, specifics
-  and policies on its linked eBay listing.** Keep permanent edits in the website.
+  **Saving an enrolled website watch can overwrite those fields, photos and
+  specifics on its linked eBay listing.** Keep permanent content edits in the
+  website. Existing payment, postage and returns policies, including per-listing
+  postage-cost overrides, are retained from the current eBay listing during
+  content revisions. Change those settings in Seller Hub.
   Seller Hub edits are not imported into the website automatically.
 - The generated description includes the watch description and verified notes.
   It contains no instruction to buy off eBay or avoid eBay fees.
@@ -240,3 +253,4 @@ Official references: [Trading AddFixedPriceItem](https://developer.ebay.com/devz
 [OAuth](https://developer.ebay.com/develop/guides/sell/authorization),
 [out-of-stock control](https://www.developer.ebay.com/api-docs/user-guides/static/trading-user-guide/out-of-stock-enable.html),
 [seller transactions](https://developer.ebay.com/devzone/xml/docs/reference/ebay/getsellertransactions.html).
+

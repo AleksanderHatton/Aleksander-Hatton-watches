@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import { XMLBuilder, XMLParser, XMLValidator } from 'fast-xml-parser';
 import { HttpError, escapeHtml } from '../_shared';
 import { MAX_STOCK_IMAGES } from '../../../src/shared/watch-options';
 
@@ -117,7 +117,7 @@ export function readRemote(item: any, seller: string) {
 }
 export const verificationXml = (body: string) => body.replace(/<UUID>.*?<\/UUID>|<SKU>.*?<\/SKU>|<InventoryTrackingMethod>.*?<\/InventoryTrackingMethod>/g, '');
 
-export function listingXml(watch: any, link: any, settings: any) {
+export function listingXml(watch: any, link: any, settings: any, existingItem?: any) {
   const title = String(link.title || `${watch.brand} ${watch.model} ${watch.reference || ''}`).trim();
   if (title.length > 80 || !title) throw new HttpError(400, 'The eBay title must contain 1–80 characters. Set a shorter eBay title for this watch.');
   const price = Number(link.price);
@@ -125,7 +125,9 @@ export function listingXml(watch: any, link: any, settings: any) {
   if (!watch.condition || !String(watch.description || '').trim()) throw new HttpError(400, 'Add the watch condition and a description before listing on eBay.');
   const photos = [...new Set<string>([...(watch.images || []), watch.image].filter(Boolean))];
   if (!photos.length || photos.length > MAX_STOCK_IMAGES || photos.some(u => !/^https:\/\//i.test(u))) throw new HttpError(400, 'eBay needs 1–12 public HTTPS photographs of this watch.');
-  for (const k of ['payment_policy_id', 'return_policy_id', 'shipping_policy_id']) if (!/^\d+$/.test(settings[k] || '')) throw new HttpError(400, 'Save the three eBay business policy IDs first.');
+  const policies = { ...settings, shipping_policy_id: link.shipping_policy_id || settings.shipping_policy_id };
+  if (!existingItem) for (const k of ['payment_policy_id', 'return_policy_id', 'shipping_policy_id']) if (!/^\d{1,20}$/.test(policies[k] || '')) throw new HttpError(400, 'Save the payment and returns policy IDs, and choose a postage policy for this watch or in the defaults.');
+  const profiles = existingItem ? existingPoliciesXml(existingItem) : `<SellerProfiles><SellerPaymentProfile><PaymentProfileID>${xml(policies.payment_policy_id)}</PaymentProfileID></SellerPaymentProfile><SellerReturnProfile><ReturnProfileID>${xml(policies.return_policy_id)}</ReturnProfileID></SellerReturnProfile><SellerShippingProfile><ShippingProfileID>${xml(policies.shipping_policy_id)}</ShippingProfileID></SellerShippingProfile></SellerProfiles>`;
   if (!settings.postcode || !settings.location) throw new HttpError(400, 'Save the actual dispatch town and postcode in eBay settings.');
   const aspects: Record<string, string | string[]> = { ...(link.aspects || {}), Brand: watch.brand, Type: 'Wristwatch' };
   if (watch.reference) aspects['Reference Number'] = watch.reference;
@@ -138,5 +140,30 @@ export function listingXml(watch: any, link: any, settings: any) {
   // These are all pre-owned grades. Do not map Excellent to New or Like New.
   const specifics = Object.entries(aspects).map(([name, value]) => `<NameValueList><Name>${xml(name)}</Name>${list(value).map(v => `<Value>${xml(v)}</Value>`).join('')}</NameValueList>`).join('');
   const description = `<div><h2>${xml(`${watch.brand} ${watch.model}`)}</h2><p>${xml(watch.description).replace(/\r?\n/g, '<br>')}</p><p>Condition: ${xml(watch.condition)}. Please examine the actual photographs and the description for wear and any faults.</p>${watch.service_notes ? `<p>Service / inspection notes: ${xml(watch.service_notes)}</p>` : ''}${watch.warranty_notes ? `<p>Warranty: ${xml(watch.warranty_notes)}</p>` : ''}</div>`;
-  return `<Item><Title>${xml(title)}</Title><Description>${xml(description)}</Description><PrimaryCategory><CategoryID>31387</CategoryID></PrimaryCategory><StartPrice currencyID="GBP">${price.toFixed(2)}</StartPrice><CategoryMappingAllowed>true</CategoryMappingAllowed><Country>GB</Country><Currency>GBP</Currency><ConditionID>3000</ConditionID><ConditionDescription>${xml(String(watch.condition) + '. See the description and photographs for the actual wear and any faults.')}</ConditionDescription><ListingDuration>GTC</ListingDuration><ListingType>FixedPriceItem</ListingType><Location>${xml(settings.location)}</Location><PostalCode>${xml(settings.postcode)}</PostalCode><Quantity>1</Quantity><SKU>${xml(link.sku)}</SKU><InventoryTrackingMethod>SKU</InventoryTrackingMethod><UUID>${xml(link.create_uuid)}</UUID><PictureDetails>${photos.map(u => `<PictureURL>${xml(u)}</PictureURL>`).join('')}</PictureDetails><ItemSpecifics>${specifics}</ItemSpecifics><SellerProfiles><SellerPaymentProfile><PaymentProfileID>${xml(settings.payment_policy_id)}</PaymentProfileID></SellerPaymentProfile><SellerReturnProfile><ReturnProfileID>${xml(settings.return_policy_id)}</ReturnProfileID></SellerReturnProfile><SellerShippingProfile><ShippingProfileID>${xml(settings.shipping_policy_id)}</ShippingProfileID></SellerShippingProfile></SellerProfiles><Site>UK</Site></Item>`;
+  return `<Item><Title>${xml(title)}</Title><Description>${xml(description)}</Description><PrimaryCategory><CategoryID>31387</CategoryID></PrimaryCategory><StartPrice currencyID="GBP">${price.toFixed(2)}</StartPrice><CategoryMappingAllowed>true</CategoryMappingAllowed><Country>GB</Country><Currency>GBP</Currency><ConditionID>3000</ConditionID><ConditionDescription>${xml(String(watch.condition) + '. See the description and photographs for the actual wear and any faults.')}</ConditionDescription><ListingDuration>GTC</ListingDuration><ListingType>FixedPriceItem</ListingType><Location>${xml(settings.location)}</Location><PostalCode>${xml(settings.postcode)}</PostalCode><Quantity>1</Quantity><SKU>${xml(link.sku)}</SKU><InventoryTrackingMethod>SKU</InventoryTrackingMethod><UUID>${xml(link.create_uuid)}</UUID><PictureDetails>${photos.map(u => `<PictureURL>${xml(u)}</PictureURL>`).join('')}</PictureDetails><ItemSpecifics>${specifics}</ItemSpecifics>${profiles}<Site>UK</Site></Item>`;
+}
+
+
+// Existing eBay postage belongs to the listing: content edits must retain its
+// policy and any per-listing price overrides rather than applying the defaults.
+// Trading requires the shipping profile and its cost overrides together on a
+// revision. Legacy listings without business policies keep their ShippingDetails
+// untouched by omitting both policy and shipping-detail changes.
+function existingPoliciesXml(item: any) {
+  if (!item.SellerProfiles) {
+    if (item.ShippingServiceCostOverrideList) throw new HttpError(502, 'eBay did not return the postage policy for its cost overrides. No content changes were sent.');
+    return '';
+  }
+  const p = item.SellerProfiles;
+  if (![p.SellerPaymentProfile?.PaymentProfileID, p.SellerReturnProfile?.ReturnProfileID, p.SellerShippingProfile?.ShippingProfileID].every(id => /^\d{1,20}$/.test(String(id || '')))) throw new HttpError(502, 'eBay did not confirm all existing business policies. No content changes were sent.');
+  return new XMLBuilder({ ignoreAttributes: false }).build({
+    SellerProfiles: p,
+    ...(item.ShippingServiceCostOverrideList ? { ShippingServiceCostOverrideList: item.ShippingServiceCostOverrideList } : {}),
+  });
+}
+export function revisionXml(watch: any, link: any, settings: any, item: any) {
+  if (!/^\d{8,20}$/.test(String(item?.ItemID || ''))) throw new HttpError(502, 'eBay did not confirm the item ID for this revision.');
+  return listingXml(watch, link, settings, item)
+    .replace('<Item>', `<Item><ItemID>${xml(item.ItemID)}</ItemID>`)
+    .replace(/<UUID>.*?<\/UUID>|<SKU>.*?<\/SKU>|<InventoryTrackingMethod>.*?<\/InventoryTrackingMethod>|<Quantity>1<\/Quantity>/g, '');
 }

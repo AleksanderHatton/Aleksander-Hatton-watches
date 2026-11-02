@@ -55,6 +55,8 @@ create table if not exists public.ebay_listings (
 );
 create index if not exists ebay_listings_sync_idx on public.ebay_listings(last_synced_at nulls first);
 alter table public.ebay_listings add column if not exists desired_revision bigint not null default 0;
+alter table public.ebay_listings add column if not exists shipping_policy_id text
+  check (shipping_policy_id is null or shipping_policy_id ~ '^[0-9]{1,20}$');
 alter table public.ebay_settings enable row level security;
 alter table public.ebay_connection enable row level security;
 alter table public.ebay_oauth_states enable row level security;
@@ -143,3 +145,4 @@ create trigger watch_ebay_queue after update on public.watches for each row exec
 revoke all on function public.claim_ebay_listing(uuid,uuid),public.finish_ebay_sync(uuid,uuid,bigint),public.record_ebay_sale(uuid,text),public.guard_ebay_checkout(),public.queue_ebay_watch_change() from public,anon,authenticated;
 grant execute on function public.claim_ebay_listing(uuid,uuid),public.finish_ebay_sync(uuid,uuid,bigint),public.record_ebay_sale(uuid,text),public.guard_ebay_checkout(),public.queue_ebay_watch_change() to service_role;
 commit;
+

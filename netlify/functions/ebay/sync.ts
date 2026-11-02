@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { HttpError } from '../_shared';
-import { accessToken, duplicateItemId, environment, EbayError, list, listingXml, readRemote, requireOutOfStock, trading, verificationXml, xml } from './client';
+import { accessToken, duplicateItemId, environment, EbayError, list, listingXml, readRemote, requireOutOfStock, revisionXml, trading, verificationXml, xml } from './client';
 
 export const missingSetup = (e: any) => ['42P01', 'PGRST205', 'PGRST202'].includes(e?.code);
 export async function checked(query: any): Promise<any> {
@@ -40,7 +40,9 @@ export function linkInput(input: any) {
     aspects[k.trim()] = v.trim();
   }
   if (input.existingItemId && !/^\d{8,20}$/.test(input.existingItemId)) throw new HttpError(400, 'Enter the numeric eBay item ID, without a URL.');
-  return { enabled: input.enabled === true, price, title, aspects };
+  const shippingPolicyId = input.shippingPolicyId === undefined ? undefined : String(input.shippingPolicyId ?? '').trim();
+  if (shippingPolicyId && !/^\d{1,20}$/.test(shippingPolicyId)) throw new HttpError(400, 'Enter a numeric eBay postage policy ID, or leave it empty to use the default.');
+  return { enabled: input.enabled === true, price, title, aspects, ...(shippingPolicyId === undefined ? {} : { shipping_policy_id: shippingPolicyId || null }) };
 }
 
 export async function saveLink(db: any, watchId: string, input: any) {
@@ -148,9 +150,7 @@ export async function syncWatch(db: any, watchId: string) {
       return;
     }
     if (link.needs_revision && settings.enabled) {
-      const full = listingXml(currentWatch, link, settings);
-      const revised = full.replace('<Item>', `<Item><ItemID>${xml(itemId)}</ItemID>`)
-        .replace(/<UUID>.*?<\/UUID>|<SKU>.*?<\/SKU>|<InventoryTrackingMethod>.*?<\/InventoryTrackingMethod>|<Quantity>1<\/Quantity>/g, '');
+      const revised = revisionXml(currentWatch, link, settings, item);
       const r = await trading(token, 'ReviseFixedPriceItem', revised);
       await updateLink(db, watchId, owner, { needs_revision: false, warnings: list(r.Errors).map(e => e.LongMessage || e.ShortMessage) });
     }
@@ -267,3 +267,4 @@ export async function runSync(db: any) {
   }));
   return results;
 }
+
