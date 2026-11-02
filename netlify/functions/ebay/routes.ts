@@ -33,7 +33,7 @@ export async function ebayRoutes(event: any, route: string[], db: any, requester
     if (missingSetup(probe.error)) return json(200, { ready: false, configured: false, listings: [], error: 'Run supabase/ebay-integration.sql to enable the eBay controls.' });
     if (probe.error) throw probe.error;
     const connection = await checked(db.from('ebay_connection').select('seller_username,environment,connected_at,refresh_expires_at').eq('id', 1).maybeSingle());
-    const listings = await checked(db.from('ebay_listings').select('watch_id,item_id,enabled,price,title,aspects,state,last_error,warnings,last_synced_at').order('created_at', { ascending: false }).limit(1000));
+    const listings = await checked(db.from('ebay_listings').select('watch_id,item_id,enabled,price,title,shipping_policy_id,aspects,state,last_error,warnings,last_synced_at').order('created_at', { ascending: false }).limit(1000));
     let configured = true;
     try { config(); encrypt('configuration check'); } catch { configured = false; }
     return json(200, { ready: true, configured, environment: environment(), settings: probe.data, connection, listings });
@@ -81,3 +81,4 @@ export async function ebayRoutes(event: any, route: string[], db: any, requester
   }
   return json(404, { error: 'eBay route not found.' });
 }
+
