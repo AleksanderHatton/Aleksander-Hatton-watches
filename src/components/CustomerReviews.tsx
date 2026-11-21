@@ -47,37 +47,36 @@ export default function CustomerReviews() {
     <section id="customer-reviews" className="section buyer-feedback" aria-labelledby="feedback-heading">
       <div className="feedback-heading">
         <div>
-          <h2 id="feedback-heading">What our eBay buyers say</h2>
-          <p>Buyer usernames are shortened for privacy.</p>
+          <h2 id="feedback-heading">Customer reviews</h2>
+          <p>From customers who bought from us on <a className="feedback-source" href={ebayFeedbackProfile} aria-label="View our buyer feedback on eBay">eBay</a>.</p>
         </div>
-        <a className="feedback-source" href={ebayFeedbackProfile}>View our feedback on eBay</a>
+        <div className="feedback-tools">
+          <label className="feedback-filter">
+            <span className="sr-only">Filter reviews by purchase</span>
+            <select value={showAll ? 'all' : 'watch'} onChange={event => setShowAll(event.target.value === 'all')} aria-controls="feedback-cards">
+              <option value="watch">Watch purchases ({watchPurchases.length})</option>
+              <option value="all">All purchases ({buyerFeedback.length})</option>
+            </select>
+          </label>
+          <div className="feedback-controls" aria-label="Review navigation" role="group">
+            <button type="button" onClick={() => move(-1)} disabled={!edges.previous} aria-controls="feedback-cards" aria-label="Previous review">Previous</button>
+            <button type="button" onClick={() => move(1)} disabled={!edges.next} aria-controls="feedback-cards" aria-label="Next review">Next</button>
+          </div>
+        </div>
       </div>
-      <div className="feedback-filters" role="group" aria-label="Filter buyer reviews">
-        <button type="button" aria-pressed={!showAll} aria-controls="feedback-cards" onClick={() => setShowAll(false)}>
-          Watch purchases ({watchPurchases.length})
-        </button>
-        <button type="button" aria-pressed={showAll} aria-controls="feedback-cards" onClick={() => setShowAll(true)}>
-          All purchases ({buyerFeedback.length})
-        </button>
-      </div>
-      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label={showAll ? 'All eBay buyer reviews' : 'Watch buyer reviews'}>
+      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label={showAll ? 'All buyer reviews' : 'Watch buyer reviews'}>
         {reviews.map(review => (
           <li className="feedback-card" key={review.item}>
             <div className="feedback-body">
-              <div className="feedback-buyer">
-                <span className="feedback-avatar" aria-hidden="true">{review.buyer.charAt(0).toUpperCase()}</span>
-                <div><strong>{review.buyer}</strong><span className="feedback-byline">eBay buyer</span></div>
+              <div className="feedback-meta">
+                <span className="feedback-rating" data-rating={review.rating}>{review.rating} feedback</span>
+                <span className="feedback-buyer"><span className="sr-only">Buyer </span>{review.buyer}</span>
               </div>
               <blockquote>{review.comment}</blockquote>
-              <div className="feedback-assessment">
-                <span className="feedback-rating" data-rating={review.rating}>{review.rating} feedback</span>
-                {review.fiveStarsInComment && (
-                  <span className="feedback-quoted-stars"><span aria-hidden="true">★★★★★</span> Five stars in buyer’s comment</span>
-                )}
-              </div>
+              {review.fiveStarsInComment && <span className="feedback-quoted-stars" aria-hidden="true">★★★★★</span>}
             </div>
             <div className="feedback-product">
-              {review.photo && <img src={review.photo} width="58" height="58" loading="lazy" alt="" />}
+              {review.photo && <img src={review.photo} width="48" height="48" loading="lazy" alt="" />}
               <div>
                 {review.archive ? <a href={review.archive}>{review.product}</a> : <strong>{review.product}</strong>}
                 <span>{review.details}</span>
@@ -86,12 +85,6 @@ export default function CustomerReviews() {
           </li>
         ))}
       </ul>
-      {(edges.previous || edges.next) && (
-        <div className="feedback-controls" aria-label="Review navigation" role="group">
-          <button type="button" onClick={() => move(-1)} disabled={!edges.previous} aria-controls="feedback-cards" aria-label="Previous review"><span aria-hidden="true">‹</span></button>
-          <button type="button" onClick={() => move(1)} disabled={!edges.next} aria-controls="feedback-cards" aria-label="Next review"><span aria-hidden="true">›</span></button>
-        </div>
-      )}
     </section>
   );
 }
