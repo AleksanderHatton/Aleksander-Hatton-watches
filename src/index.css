@@ -346,6 +346,32 @@ h6.font-serif {
   font-weight: 600;
   text-decoration: underline;
 }
+.feedback-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.feedback-filters button {
+  min-height: 2.75rem;
+  padding: .4rem .95rem;
+  border: 1px solid #777c73;
+  border-radius: 2rem;
+  background: #fff;
+  color: #232923;
+  font: inherit;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.feedback-filters button[aria-pressed="true"] {
+  border-color: #232923;
+  background: #232923;
+  color: #fff;
+}
+.feedback-filters button:focus-visible {
+  outline: 2px solid #232923;
+  outline-offset: 2px;
+}
 .feedback-track {
   display: grid;
   grid-auto-flow: column;
@@ -378,7 +404,7 @@ h6.font-serif {
   background: #222824;
   color: #fff;
 }
-.feedback-buyer, .feedback-watch, .feedback-controls {
+.feedback-buyer, .feedback-product, .feedback-controls {
   display: flex;
   align-items: center;
   gap: .75rem;
@@ -395,7 +421,7 @@ h6.font-serif {
   background: #38403a;
   font: 1.2rem Georgia, serif;
 }
-.feedback-buyer strong, .feedback-byline, .feedback-watch span {
+.feedback-buyer strong, .feedback-byline, .feedback-product span {
   display: block;
 }
 .feedback-buyer strong { line-height: 1.2; }
@@ -429,21 +455,21 @@ h6.font-serif {
 .feedback-rating[data-rating="Neutral"]::before { background: #d2c4a4; }
 .feedback-rating[data-rating="Negative"]::before { background: #f1a5a2; }
 .feedback-quoted-stars { font-size: .78rem; color: #e5dcc8; }
-.feedback-watch {
+.feedback-product {
   padding: .9rem 1.25rem;
   min-height: 5.15rem;
   line-height: 1.35;
 }
-.feedback-watch img {
+.feedback-product img {
   width: 3.625rem;
   height: 3.625rem;
   flex: none;
   object-fit: contain;
   border-radius: .25rem;
 }
-.feedback-watch strong, .feedback-watch a { font-size: .95rem; font-weight: 600; }
-.feedback-watch a { text-decoration: underline; }
-.feedback-watch span { color: #595d56; font-size: .85rem; margin-top: .2rem; }
+.feedback-product strong, .feedback-product a { font-size: .95rem; font-weight: 600; }
+.feedback-product a { text-decoration: underline; }
+.feedback-product span { color: #595d56; font-size: .85rem; margin-top: .2rem; }
 .feedback-controls { justify-content: flex-end; margin-top: .6rem; gap: .5rem; }
 .feedback-controls button {
   display: grid;

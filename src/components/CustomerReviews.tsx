@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ebayFeedbackProfile, watchFeedback } from '../shared/ebay-feedback';
+import { buyerFeedback, ebayFeedbackProfile } from '../shared/ebay-feedback';
+
+const watchPurchases = buyerFeedback.filter(review => review.category === 'watch');
 
 export default function CustomerReviews() {
   const track = useRef<HTMLUListElement>(null);
+  const [showAll, setShowAll] = useState(false);
   const [edges, setEdges] = useState({ previous: false, next: false });
+  const reviews = showAll ? buyerFeedback : watchPurchases;
 
   useEffect(() => {
     const list = track.current;
@@ -17,6 +21,7 @@ export default function CustomerReviews() {
         : { previous, next });
     }
 
+    list.scrollTo({ left: 0, behavior: 'instant' });
     updateEdges();
     list.addEventListener('scroll', updateEdges, { passive: true });
     window.addEventListener('resize', updateEdges);
@@ -28,7 +33,7 @@ export default function CustomerReviews() {
       window.removeEventListener('resize', updateEdges);
       observer?.disconnect();
     };
-  }, []);
+  }, [showAll]);
 
   function move(direction: -1 | 1) {
     const list = track.current;
@@ -42,13 +47,21 @@ export default function CustomerReviews() {
     <section id="customer-reviews" className="section buyer-feedback" aria-labelledby="feedback-heading">
       <div className="feedback-heading">
         <div>
-          <h2 id="feedback-heading">What watch buyers say</h2>
-          <p>Selected feedback from our eBay watch sales. Buyer usernames are shortened.</p>
+          <h2 id="feedback-heading">What our eBay buyers say</h2>
+          <p>Buyer usernames are shortened for privacy.</p>
         </div>
-        <a className="feedback-source" href={ebayFeedbackProfile}>Read all feedback on eBay</a>
+        <a className="feedback-source" href={ebayFeedbackProfile}>View our feedback on eBay</a>
       </div>
-      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label="Watch buyer reviews">
-        {watchFeedback.map(review => (
+      <div className="feedback-filters" role="group" aria-label="Filter buyer reviews">
+        <button type="button" aria-pressed={!showAll} aria-controls="feedback-cards" onClick={() => setShowAll(false)}>
+          Watch purchases ({watchPurchases.length})
+        </button>
+        <button type="button" aria-pressed={showAll} aria-controls="feedback-cards" onClick={() => setShowAll(true)}>
+          All purchases ({buyerFeedback.length})
+        </button>
+      </div>
+      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label={showAll ? 'All eBay buyer reviews' : 'Watch buyer reviews'}>
+        {reviews.map(review => (
           <li className="feedback-card" key={review.item}>
             <div className="feedback-body">
               <div className="feedback-buyer">
@@ -63,10 +76,10 @@ export default function CustomerReviews() {
                 )}
               </div>
             </div>
-            <div className="feedback-watch">
+            <div className="feedback-product">
               {review.photo && <img src={review.photo} width="58" height="58" loading="lazy" alt="" />}
               <div>
-                {review.archive ? <a href={review.archive}>{review.watch}</a> : <strong>{review.watch}</strong>}
+                {review.archive ? <a href={review.archive}>{review.product}</a> : <strong>{review.product}</strong>}
                 <span>{review.details}</span>
               </div>
             </div>
