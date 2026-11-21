@@ -1,13 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { buyerFeedback, ebayFeedbackProfile } from '../shared/ebay-feedback';
 
-const watchPurchases = buyerFeedback.filter(review => review.category === 'watch');
-
 export default function CustomerReviews() {
   const track = useRef<HTMLUListElement>(null);
-  const [showAll, setShowAll] = useState(false);
   const [edges, setEdges] = useState({ previous: false, next: false });
-  const reviews = showAll ? buyerFeedback : watchPurchases;
 
   useEffect(() => {
     const list = track.current;
@@ -21,7 +17,6 @@ export default function CustomerReviews() {
         : { previous, next });
     }
 
-    list.scrollTo({ left: 0, behavior: 'instant' });
     updateEdges();
     list.addEventListener('scroll', updateEdges, { passive: true });
     window.addEventListener('resize', updateEdges);
@@ -33,7 +28,7 @@ export default function CustomerReviews() {
       window.removeEventListener('resize', updateEdges);
       observer?.disconnect();
     };
-  }, [showAll]);
+  }, []);
 
   function move(direction: -1 | 1) {
     const list = track.current;
@@ -48,24 +43,15 @@ export default function CustomerReviews() {
       <div className="feedback-heading">
         <div>
           <h2 id="feedback-heading">Customer reviews</h2>
-          <p>From customers who bought from us on <a className="feedback-source" href={ebayFeedbackProfile} aria-label="View our buyer feedback on eBay">eBay</a>.</p>
+          <p>Selected feedback from our pre-owned watch sales on <a className="feedback-source" href={ebayFeedbackProfile} aria-label="View our full feedback on eBay">eBay</a>.</p>
         </div>
-        <div className="feedback-tools">
-          <label className="feedback-filter">
-            <span className="sr-only">Filter reviews by purchase</span>
-            <select value={showAll ? 'all' : 'watch'} onChange={event => setShowAll(event.target.value === 'all')} aria-controls="feedback-cards">
-              <option value="watch">Watch purchases ({watchPurchases.length})</option>
-              <option value="all">All purchases ({buyerFeedback.length})</option>
-            </select>
-          </label>
-          <div className="feedback-controls" aria-label="Review navigation" role="group">
-            <button type="button" onClick={() => move(-1)} disabled={!edges.previous} aria-controls="feedback-cards" aria-label="Previous review">Previous</button>
-            <button type="button" onClick={() => move(1)} disabled={!edges.next} aria-controls="feedback-cards" aria-label="Next review">Next</button>
-          </div>
+        <div className="feedback-controls" aria-label="Review navigation" role="group">
+          <button type="button" onClick={() => move(-1)} disabled={!edges.previous} aria-controls="feedback-cards" aria-label="Previous review">Previous</button>
+          <button type="button" onClick={() => move(1)} disabled={!edges.next} aria-controls="feedback-cards" aria-label="Next review">Next</button>
         </div>
       </div>
-      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label={showAll ? 'All buyer reviews' : 'Watch buyer reviews'}>
-        {reviews.map(review => (
+      <ul className="feedback-track" id="feedback-cards" ref={track} tabIndex={0} aria-label="Watch buyer reviews">
+        {buyerFeedback.map(review => (
           <li className="feedback-card" key={review.item}>
             <div className="feedback-body">
               <div className="feedback-meta">
