@@ -375,7 +375,7 @@ h6.font-serif {
 .feedback-track {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 31%);
+  grid-auto-columns: 31%;
   gap: 1rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -490,10 +490,10 @@ h6.font-serif {
   cursor: default;
 }
 @media (max-width: 900px) {
-  .feedback-track { grid-auto-columns: minmax(0, 45%); }
+  .feedback-track { grid-auto-columns: 45%; }
 }
 @media (max-width: 600px) {
-  .feedback-track { grid-auto-columns: minmax(0, 86%); gap: .75rem; }
+  .feedback-track { grid-auto-columns: 86%; gap: .75rem; }
   .feedback-heading { display: grid; }
   .feedback-controls { justify-content: flex-start; }
 }
