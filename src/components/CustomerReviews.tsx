@@ -43,7 +43,7 @@ export default function CustomerReviews() {
       <div className="feedback-heading">
         <div>
           <h2 id="feedback-heading">Customer reviews</h2>
-          <p>Selected feedback from our pre-owned watch sales on <a className="feedback-source" href={ebayFeedbackProfile} aria-label="View our full feedback on eBay">eBay</a>.</p>
+          <p><a className="feedback-source" href={ebayFeedbackProfile}>Originally posted on eBay</a></p>
         </div>
         <div className="feedback-controls" aria-label="Review navigation" role="group">
           <button type="button" onClick={() => move(-1)} disabled={!edges.previous} aria-controls="feedback-cards" aria-label="Previous review">Previous</button>

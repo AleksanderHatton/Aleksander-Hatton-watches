@@ -88,14 +88,6 @@ export const buyerFeedback: readonly EbayBuyerFeedback[] = [
     details: "7009-3040 · Black bullseye dial",
   },
   {
-    item: "198292260122",
-    buyer: "m***2",
-    rating: "Positive",
-    comment: "Great ebayer, beautiful watch",
-    product: "TAG Heuer Aquaracer 300M Alarm",
-    details: "WAF111Z",
-  },
-  {
     item: "198183715050",
     buyer: "m***7",
     rating: "Positive",
@@ -126,14 +118,6 @@ export const buyerFeedback: readonly EbayBuyerFeedback[] = [
     comment: "All good",
     product: "Seiko Automatic",
     details: "17 jewels · Expansion band",
-  },
-  {
-    item: "197923996696",
-    buyer: "l***6",
-    rating: "Positive",
-    comment: "Great Ebayer! Recommended seller , thank you.",
-    product: "Seiko 5 Automatic",
-    details: "6309-8840 · 21 jewels",
   },
   {
     item: "197544565152",
